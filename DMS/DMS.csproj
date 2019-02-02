@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+	<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <UserSecretsId>aspnet-DMS-8B83B3C5-51EF-4374-9857-13FDCA3C45FA</UserSecretsId>
+	<OutputType>Exe</OutputType>
+	<PreserveCompilationContext>true</PreserveCompilationContext>
+	<RuntimeIdentifiers>win7-x64;win7-x86;ubuntu.16.04-x64;linux-arm;</RuntimeIdentifiers>
+    <SuppressDockerTargets>True</SuppressDockerTargets>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\Migrations\**" />
+    <Content Remove="Data\Migrations\**" />
+    <EmbeddedResource Remove="Data\Migrations\**" />
+    <None Remove="Data\Migrations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20181031162350_AddedDatesToModels.cs" />
+    <Compile Remove="Migrations\20181031162350_AddedDatesToModels.Designer.cs" />
+    <Compile Remove="Migrations\20181102224730_AddedDoctorIdToPatient.cs" />
+    <Compile Remove="Migrations\20181102224730_AddedDoctorIdToPatient.Designer.cs" />
+    <Compile Remove="Migrations\20181201183817_role.cs" />
+    <Compile Remove="Migrations\20181201183817_role.Designer.cs" />
+    <Compile Remove="Migrations\20181203154834_RoleError.cs" />
+    <Compile Remove="Migrations\20181203154834_RoleError.Designer.cs" />
+    <Compile Remove="Migrations\20181203162905_RoleError.cs" />
+    <Compile Remove="Migrations\20181203162905_RoleError.Designer.cs" />
+    <Compile Remove="Migrations\20181203171047_Roles.cs" />
+    <Compile Remove="Migrations\20181203171047_Roles.Designer.cs" />
+    <Compile Remove="Migrations\20181203171926_Roles.cs" />
+    <Compile Remove="Migrations\20181203171926_Roles.Designer.cs" />
+    <Compile Remove="Migrations\20181203172232_Roles.cs" />
+    <Compile Remove="Migrations\20181203172232_Roles.Designer.cs" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="2.0.0" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.6" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.3" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.4" PrivateAssets="All" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.3" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.2" />
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\API\Data\" />
+    <Folder Include="Areas\API\Models\" />
+    <Folder Include="Areas\API\Views\" />
+  </ItemGroup>
+
+</Project>
