@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace DMS.Services
 {
-    public class DbApplicationUserRepository : IApplicationUserRepository
+    public class EFApplicationUserRepository : IApplicationUserRepository
     {
         private ApplicationDbContext _db;
 
 
         private UserManager<ApplicationUser> _userManager;
 
-        public DbApplicationUserRepository( ApplicationDbContext db,
+        public EFApplicationUserRepository( ApplicationDbContext db,
                                             UserManager<ApplicationUser> userManager )
         {
             _db = db;

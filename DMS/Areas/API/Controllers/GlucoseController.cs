@@ -84,7 +84,7 @@ namespace DMS.Areas.API.Controllers
                 user.RemoteLoginToken = Guid.NewGuid();                 // Create a login token, similar to a "session id"
                 GlucoseEntry glucose = await _glucose.ReadAsync(glucoseId);
 
-                var glucoseModel = new GlucoseEntriesViewModel
+                var glucoseModel = new GlucoseEntryViewModel
                 {
                     PatientUsername = glucose.UserName,
                     Patient = glucose.Patient,

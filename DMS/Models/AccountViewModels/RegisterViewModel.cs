@@ -1,4 +1,5 @@
 ﻿using DMS.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -44,7 +45,7 @@ namespace DMS.Models.AccountViewModels
         // Register:
         [Display( Name = "Degree Abbreviation" )]
         public string DegreeAbbreviation { get; set; }
-        [Display( Name = "Doctor" )]
+        [Display( Name = "All Doctors" )]
         public List<Doctor> AllDoctors { get; set; }
 
         public async Task<Patient> GetNewPatient( IDoctorRepository doctorRepository)

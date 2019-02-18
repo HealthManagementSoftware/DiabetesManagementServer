@@ -1,6 +1,7 @@
 ﻿
-public enum BeforeAfter
+public class BeforeAfter
 {
-    BEFORE,
-    AFTER
+    public const int BEFORE = 1;
+    public const int AFTER = 2;
+
 };

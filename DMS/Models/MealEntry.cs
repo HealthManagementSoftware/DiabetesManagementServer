@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace DMS.Models
 {
     public class MealEntry
     {
+        [Key]
         public Guid Id { get; set; }
         public string UserName { get; set; }
         //public string UserId { get; set; }
@@ -22,21 +25,28 @@ namespace DMS.Models
 
         } // constructor
 
+        //public override string ToString()
+        //{
+        //    string mealItemString = "";
+        //    foreach ( MealItem mealItem in MealItems )
+        //        mealItemString += mealItem.ToString();
+
+        //    return "MEAL ENTRY:"
+        //        + "\nId: " + Id
+        //        + "\nUserName: " + UserName
+        //        //+ "\nUserId: " + UserId
+        //        + "\nTotal Carbs: " + TotalCarbs
+        //        + "\nCreatedAt: " + CreatedAt
+        //        + "\nUpdatedAt: " + UpdatedAt
+        //        + "\nTimestamp: " + Timestamp
+        //        + "\n" + mealItemString;
+
+        //} // ToString
+
+
         public override string ToString()
         {
-            string mealItemString = "";
-            foreach ( MealItem mealItem in MealItems )
-                mealItemString += mealItem.ToString();
-
-            return "MEAL ENTRY:"
-                + "\nId: " + Id
-                + "\nUserName: " + UserName
-                //+ "\nUserId: " + UserId
-                + "\nTotal Carbs: " + TotalCarbs
-                + "\nCreatedAt: " + CreatedAt
-                + "\nUpdatedAt: " + UpdatedAt
-                + "\nTimestamp: " + Timestamp
-                + "\n" + mealItemString;
+            return JsonConvert.SerializeObject(this);
 
         } // ToString
 

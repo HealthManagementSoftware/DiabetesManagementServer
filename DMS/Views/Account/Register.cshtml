@@ -47,10 +47,20 @@
 
             <div class="form-group" id="doctorList">
                 <label asp-for="DoctorUserName"></label>
-                @Html.DropDownList( "DoctorUserName",
+                <select asp-for="DoctorUserName" class="form-control" id="DoctorUserName">
+                    <option value="">-- Select a Doctor --</option>
+                    @foreach( Doctor dr in Model.AllDoctors )
+                    {
+                        <option value="@dr.UserName">@dr.FirstName @dr.LastName, @dr.DegreeAbbreviation</option>
+                    }
+                </select>
+                @*@Html.DropDownList( "DoctorUserName",
                     new SelectList(Model.AllDoctors),
                     "Select your doctor",
-                    new { @class = "form-control" })
+                    new { @class = "form-control" })*@
+                @*@Html.DropDownListFor( d => Model.DoctorUserName,
+                    new SelectList(Model.AllDoctors),
+                    htmlAttributes: new { @class = "form-control", id = "DoctorUserName" })*@
             </div>
             <div class="form-group" id="degreeAbreviation">
                 <label asp-for="DegreeAbbreviation" style="font-size: 18px;" c></label>

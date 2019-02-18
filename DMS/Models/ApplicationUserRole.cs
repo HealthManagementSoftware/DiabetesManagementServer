@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,12 @@ namespace DMS.Models
 {
     public class ApplicationUserRole : IdentityUserRole<string>
     {
-        //public string UserId { get; set; }
+        [JsonProperty(PropertyName = "UserId")]
+        public override string UserId { get; set; }
         public ApplicationUser User { get; set; }
         //public string Name { get; set; }
-        //public string RoleId { get; set; }
+        [JsonProperty(PropertyName = "RoleId")]
+        public override string RoleId { get; set; }
         public ApplicationRole Role { get; set; }
     }
 }

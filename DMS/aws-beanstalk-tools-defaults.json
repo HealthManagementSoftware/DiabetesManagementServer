@@ -1,19 +1,19 @@
 
 {
     "comment" : "This file is used to help set default values when using the dotnet CLI extension Amazon.ElasticBeanstalk.Tools. For more information run \"dotnet eb --help\" from the project root.",
-    "profile" : "singedtentacle",
+    "profile" : "DiabetesUser",
     "region"  : "us-east-1",
     "application" : "DMS",
-    "environment" : "Diabetesmgmt-dev",
-    "cname"       : "diabetesmgmt-dev",
-    "solution-stack" : "64bit Windows Server 2016 v1.2.0 running IIS 10.0",
+    "environment" : "DMS-test",
+    "cname"       : "dms-test",
+    "solution-stack" : "64bit Windows Server 2012 v1.2.0 running IIS 8",
     "environment-type" : "SingleInstance",
     "instance-profile" : "aws-elasticbeanstalk-ec2-role",
     "service-role"     : "aws-elasticbeanstalk-service-role",
     "health-check-url" : "/",
     "instance-type"    : "t2.micro",
     "key-pair"         : "",
-    "iis-website"      : "Default Web Site",
+    "iis-website"      : "DMS",
     "app-path"         : "/",
     "enable-xray"      : false
 }

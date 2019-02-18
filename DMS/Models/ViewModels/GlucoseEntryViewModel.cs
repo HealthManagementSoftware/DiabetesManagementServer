@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace DMS.Models.ViewModels
 {
-    public class GlucoseEntriesViewModel
+    public class GlucoseEntryViewModel
     {
         public string PatientUsername { get; set; }
         public Patient Patient { get; set; }
         public float Measurement { get; set; }
-        public BeforeAfter BeforeAfter { get; set; }
-        public WhichMeal WhichMeal { get; set; }
+        public int BeforeAfter { get; set; }
+        public int WhichMeal { get; set; }
         public DateTime Date { get; set; }
         public long Timestamp { get; set; }
 

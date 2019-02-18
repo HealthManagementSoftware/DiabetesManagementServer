@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 
 namespace DMS.Models
 {
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class ApplicationUser : IdentityUser
     {
+        [Key]
+        public override string Id { get; set; }
+
         //public ICollection<IdentityRole> Roles { get; set; }
         public List<ApplicationRole> Roles { get; set; }
         //public IdentityUser User { get;  set; }
@@ -28,11 +33,13 @@ namespace DMS.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+
         public ApplicationUser()
         {
             Roles = new List<ApplicationRole>();
 
         } // constructor
+
 
         public bool HasRole(string roleName)
         {
@@ -62,6 +69,13 @@ namespace DMS.Models
             UpdatedAt = user.UpdatedAt;
 
         } // CopyFrom
+
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+
+        } // ToString
 
     } // class
 
