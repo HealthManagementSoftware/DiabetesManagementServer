@@ -19,7 +19,7 @@ namespace DMS
             //BuildWebHost(args).Run();                     // ASP.NET CORE 2.0
 
             // Use the settings below to deploy to a custom environment (Linux deploy, etc).
-            var hostUrl = "http://0.0.0.0:51874";
+            //var hostUrl = "http://0.0.0.0:51874";
 
             var host = WebHost
                 .CreateDefaultBuilder(args) // <-- Automatically adds User Secrets
@@ -38,10 +38,10 @@ namespace DMS
                     }
                 })
                 .UseKestrel()
-                .UseUrls(hostUrl)   // Override http://localhost:5000 to allow from outside machines
+                //.UseUrls(hostUrl)   // Override http://localhost:5000 to allow from outside machines
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseApplicationInsights()
+                //.UseApplicationInsights()
                 .UseStartup<Startup>()
                 .Build();
 

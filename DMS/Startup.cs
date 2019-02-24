@@ -23,8 +23,6 @@ namespace DMS
 {
     public class Startup
     {
-        //private const string EndpointUri = "https://diabetesmgmt.documents.azure.com:443/";
-        //private const string PrimaryKey = "J7736eRht0ZY8hZb9aJzcApA4Y8Z9Nuv6dXsyeK91uFQRJLZ24IXg34Zy1ghsveYWIU7HxVDLktz9VDQbFXRbA==";
         private DocumentClient client;
 
         public IConfiguration Configuration { get; }
@@ -45,7 +43,7 @@ namespace DMS
             //
             // Change DB Connection here:
             //
-            IConfigurationSection configSection = Configuration.GetSection("CosmosTestSettings");
+            IConfigurationSection configSection = Configuration.GetSection("CosmosSettings");
             //IConfigurationSection configSection = Configuration.GetSection("CosmosSettings");
 
             // The "AuthKey" is retrieved from the Azure Key Manager, using the connection string retrieved 
@@ -114,7 +112,7 @@ namespace DMS
         {
             if( env.IsDevelopment() )
             {
-                app.UseBrowserLink();
+                //app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             }
