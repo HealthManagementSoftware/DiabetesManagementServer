@@ -1,9 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using DMS.Data;
 using DMS.Models;
-using DMS.Models.ViewModels;
 using DMS.Services.Interfaces;
-using System;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -52,7 +50,7 @@ namespace DMS.Services
         public async Task UpdateAsync( string username, Patient patient )
         {
             var oldPatient = await ReadAsync( username );
-            if ( oldPatient != null )
+            if( oldPatient != null )
             {
                 oldPatient.FirstName = patient.FirstName;
                 oldPatient.LastName = patient.LastName;
@@ -69,11 +67,16 @@ namespace DMS.Services
                 oldPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
                 oldPatient.Height = patient.Height;
                 oldPatient.Weight = patient.Weight;
-                oldPatient.DoctorUserName = patient.DoctorUserName;
-                if ( oldPatient.Doctor != null && patient.Doctor != null
-                    && oldPatient.Doctor.Id == patient.Doctor.Id )
-                    _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
-                
+                if( patient.DoctorId != null && oldPatient.DoctorId != patient.DoctorId )
+                    oldPatient.DoctorId = patient.DoctorId;
+                if( patient.DoctorUserName != null && oldPatient.DoctorUserName != patient.DoctorUserName )
+                    oldPatient.DoctorUserName = patient.DoctorUserName;
+                if( patient.Doctor != null )
+                    oldPatient.Doctor = oldPatient.Doctor;
+                //if ( oldPatient.Doctor != null && patient.Doctor != null
+                //    && oldPatient.Doctor.Id == patient.Doctor.Id )
+                //    _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
+
                 _db.Entry( oldPatient ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
                 return;
@@ -85,7 +88,7 @@ namespace DMS.Services
         public async Task DeleteAsync( string username )
         {
             var patient = await ReadAsync( username );
-            if ( patient != null )
+            if( patient != null )
             {
                 _db.Patients.Remove( patient );
                 await _db.SaveChangesAsync();
@@ -94,14 +97,14 @@ namespace DMS.Services
 
         } // DeleteAsync
 
-        public ApplicationUser ReadPatient(string email)
+        public ApplicationUser ReadPatient( string email )
         {
-            return  _db.Users.FirstOrDefault(u => u.Email == email);
+            return _db.Users.FirstOrDefault( u => u.Email == email );
         }
 
-        public bool Exists(string firstName/*, string lastName*/)
+        public bool Exists( string firstName/*, string lastName*/)
         {
-            return _db.Patients.Any(fn => fn.FirstName == firstName/*, ln => ln.LastName ==lastName*/);
+            return _db.Patients.Any( fn => fn.FirstName == firstName/*, ln => ln.LastName ==lastName*/);
         }
 
     } // Class
