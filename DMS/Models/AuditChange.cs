@@ -15,7 +15,7 @@ namespace DMS.Models
     {
         public const int MAX_DIFFS = 99;
 
-        public int ID { get; set; }
+        public string Id { get; set; }
         public string KeyFieldID { get; set; }
         public string DateTimeStamp { get; set; }
         public string DataModel { get; set; }
@@ -30,10 +30,18 @@ namespace DMS.Models
 
         } // constructor
 
-        public void CreateAuditTrail( int action, string keyFieldID, Object oldObject, Object newObject )
+
+        /// <summary>
+        /// Create a new Audit, comparing two objects of any class type.
+        /// </summary>
+        /// <param name="auditActionType"></param>
+        /// <param name="keyFieldID"></param>
+        /// <param name="oldObject"></param>
+        /// <param name="newObject"></param>
+        public void CreateAuditTrail( int auditActionType, string keyFieldID, Object oldObject, Object newObject )
         {
             // get the differance  
-            CompareLogic compObjects = new CompareLogic();
+            var compObjects = new CompareLogic();
             compObjects.Config.MaxDifferences = MAX_DIFFS;
 
             // This generates the deltas:
@@ -42,7 +50,7 @@ namespace DMS.Models
             // remove "." in front of field/property names and add deltas to our list:
             foreach( var change in compResult.Differences )
             {
-                AuditDelta delta = new AuditDelta();
+                var delta = new AuditDelta();
                 if( change.PropertyName.Substring( 0, 1 ) == "." )
                     delta.FieldName = change.PropertyName.Substring( 1, change.PropertyName.Length - 1 );
                 delta.ValueBefore = change.Object1Value;
@@ -51,12 +59,12 @@ namespace DMS.Models
             }
 
             // Set values to save:
-            Action = action;
-            AuditActionTypeName = AuditActionType.GetTypeName( action );
+            Action = auditActionType;
+            AuditActionTypeName = AuditActionType.GetTypeName( auditActionType );
             KeyFieldID = keyFieldID;
+            DataModel = oldObject.GetType().ToString();
 
-            // Save to an external database:
-            // TODO
+            // Save to database after creating the audit trail
 
         } // CreateAuditTrail
 

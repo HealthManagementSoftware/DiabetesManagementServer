@@ -7,14 +7,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 //using Amazon.DynamoDBv2;
@@ -24,6 +21,7 @@ namespace DMS
     public class Startup
     {
         private DocumentClient client;
+        private DocumentClient auditClient;
 
         public IConfiguration Configuration { get; }
 
@@ -43,48 +41,85 @@ namespace DMS
             //
             // Change DB Connection here:
             //
-            IConfigurationSection configSection = Configuration.GetSection("CosmosSettings");
-            //IConfigurationSection configSection = Configuration.GetSection("CosmosSettings");
+            IConfigurationSection configSection = Configuration.GetSection(DbInfo.KEY_PRIMARY_DB_SECTION);
 
             // The "AuthKey" is retrieved from the Azure Key Manager, using the connection string retrieved 
             //      in Program.cs. If running locally, it will use secrets.json which is set with :
+            // dotnet user-secrets -p ./DMS/DMS.csproj set AuditCosmosSettings:AuditAuthKey "..."
             //
             services.AddDbContextPool<ApplicationDbContext>( options =>
-              options.UseCosmos( 
-                  configSection[ "ServiceEndpoint" ], 
-                  configSection[ "AuthKey" ], 
-                  configSection[ "DatabaseName" ] 
+              options.UseCosmos(
+                  configSection[ DbInfo.KEY_SERVICE_ENDPOINT ],
+                  configSection[ DbInfo.KEY_AUTH_KEY ],               //Saved in Azure Key Vault
+                  configSection[ DbInfo.KEY_DB_NAME ]
                   ) );
             //.UseMySql( Configuration.GetConnectionString("AzureStorageConnectionString-1") ) );
 
             // https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-dotnetcore-get-started
-            client = new DocumentClient( new Uri( configSection[ "ServiceEndpoint" ] ), configSection[ "AuthKey" ] );
             try
             {
-                StartCosmosConnection( configSection[ "ServiceEndpoint" ], configSection[ "AuthKey" ] ).Wait();
+                client = new DocumentClient( new Uri( configSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ), configSection[ DbInfo.KEY_AUTH_KEY ] );
+                CreateCosmosCollection( client, configSection[ DbInfo.KEY_DB_NAME ], DbInfo.COLLECTION_NAME ).Wait();
             }
-            catch( DocumentClientException de )
+            catch ( DocumentClientException de )
             {
                 Exception baseException = de.GetBaseException();
                 Console.WriteLine( "{0} error occurred: {1}, Message: {2}", de.StatusCode, de.Message, baseException.Message );
             }
-            catch( Exception e )
+            catch ( Exception e )
             {
                 Exception baseException = e.GetBaseException();
                 Console.WriteLine( "Error: {0}, Message: {1}", e.Message, baseException.Message );
             }
 
+
+            // Create the connection to the Audit database:
+
+            IConfigurationSection auditConfigSection = Configuration.GetSection(DbInfo.KEY_AUDIT_DB_SECTION);
+
+            services.AddDbContextPool<AuditDbContext>( options =>
+              options.UseCosmos(
+                  auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ],
+                  auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ],      //Saved in Azure Key Vault
+                  auditConfigSection[ DbInfo.KEY_DB_NAME ]
+                  ) );
+
+            try
+            {
+                auditClient = new DocumentClient(
+                    new Uri( auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ),
+                    auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ]
+                    );
+                CreateCosmosCollection(
+                    auditClient,
+                    auditConfigSection[ DbInfo.KEY_DB_NAME ],
+                    DbInfo.AUDIT_COLLECTION_NAME
+                    ).Wait();
+            }
+            catch ( DocumentClientException de )
+            {
+                Exception baseException = de.GetBaseException();
+                Console.WriteLine( "{0} error occurred: {1}, Message: {2}", de.StatusCode, de.Message, baseException.Message );
+            }
+            catch ( Exception e )
+            {
+                Exception baseException = e.GetBaseException();
+                Console.WriteLine( "Error: {0}, Message: {1}", e.Message, baseException.Message );
+            }
+
+
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
             // Adding scoped services to provide DB Repositories:
-            services.AddScoped<IApplicationUserRepository, EFApplicationUserRepository>();
+            services.AddScoped<IApplicationUserRepository, DbApplicationUserRepository>();
             services.AddScoped<IExerciseEntryRepository, DbExerciseEntryRepository>();
             services.AddScoped<IGlucoseEntryRepository, DbGlucoseEntriesRepository>();
             services.AddScoped<IMealEntryRepository, DbMealEntryRepository>();
             services.AddScoped<IMealItemRepository, DbMealItemRepository>();
             services.AddScoped<IPatientRepository, DbPatientRepository>();
             services.AddScoped<IDoctorRepository, DbDoctorRepository>();
+            services.AddScoped<IAuditRepository, DbAuditRepository>();
 
             //services.AddIdentityCore<RoleUser>(options => { });
             //services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
@@ -110,7 +145,7 @@ namespace DMS
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure( IApplicationBuilder app, IHostingEnvironment env )
         {
-            if( env.IsDevelopment() )
+            if ( env.IsDevelopment() )
             {
                 //app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
@@ -140,16 +175,22 @@ namespace DMS
         } // Configure
 
 
-        private async Task StartCosmosConnection( string EndpointUri, string PrimaryKey )
+        private async Task CreateCosmosCollection( DocumentClient client, string dbName, string collectionName )
         {
-            await client.CreateDatabaseIfNotExistsAsync( new Database { Id = DbInfo.DBNAME } );    // Create DB
+            await client.CreateDatabaseIfNotExistsAsync( new Database { Id = dbName } );     // Create DB
 
-            await client.CreateDocumentCollectionIfNotExistsAsync(                              // Create "table"
-                UriFactory.CreateDatabaseUri( DbInfo.DBNAME ),
-                new DocumentCollection { Id = DbInfo.COLLECTIONNAME }
+            await client.CreateDocumentCollectionIfNotExistsAsync(                           // Create "table"
+                UriFactory.CreateDatabaseUri( dbName ),
+                new DocumentCollection { Id = collectionName }
                 );
 
-            //var testUser = new ApplicationUser { FirstName = "Bob", LastName = "TestUser" };    // Test data
+        } // StartCosmosConnection
+
+
+
+        private async Task SeedRoles()
+        {
+            //var testUser = new ApplicationUser { FirstName = "Bob", LastName = "TestUser" };      // Test data
             var doctorRole = new ApplicationRole
             {
                 //Id = new Guid().ToString(),
@@ -158,7 +199,7 @@ namespace DMS
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
-            await CreateRoleIfNotExists( DbInfo.DBNAME, DbInfo.COLLECTIONNAME, doctorRole );
+            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, doctorRole );
 
             var patientRole = new ApplicationRole
             {
@@ -168,9 +209,9 @@ namespace DMS
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
-            await CreateRoleIfNotExists( DbInfo.DBNAME, DbInfo.COLLECTIONNAME, patientRole );
+            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, patientRole );
 
-        } // StartCosmosConnection
+        } // SeedRoles
 
 
         private async Task CreateRoleIfNotExists( string databaseName, string collectionName, ApplicationRole role )
@@ -181,7 +222,7 @@ namespace DMS
                 UriFactory.CreateDocumentCollectionUri( databaseName, collectionName ), queryOptions )
                 .Where( n => n.Name == role.Name );
 
-            if( roleQuery.ToList().Count < 1 )
+            if ( roleQuery.ToList().Count < 1 )
                 await client.CreateDocumentAsync(
                         UriFactory.CreateDocumentCollectionUri( databaseName, collectionName ), role
                         );

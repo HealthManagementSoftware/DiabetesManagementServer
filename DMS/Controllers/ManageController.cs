@@ -145,8 +145,12 @@ namespace DMS.Controllers
                 if( patient == null )
                     throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
                 //patient.CopyFrom( user );
-                patient.Doctor = await _doctorRepository.ReadAsync( model.Doctor );
-                patient.DoctorUserName = patient.Doctor.UserName;
+                if( model.Doctor != null )
+                {
+                    patient.Doctor = await _doctorRepository.ReadAsync( model.Doctor );
+                    patient.DoctorUserName = patient.Doctor.UserName;
+
+                } // if
 
                 _logger.LogDebug( "****************PATIENT****************" );
 

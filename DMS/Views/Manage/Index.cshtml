@@ -16,29 +16,30 @@
                 <label asp-for="Username"></label>
                 <input asp-for="Username" class="form-control" disabled />
             </div>
-            @if( Model.Doctor != null )
+            @if ( Model.Doctor != null )
             {
                 <label>Current Doctor: </label>
                 <span>@Model.Doctor</span>
             }
-            @if( Model.AllDoctors != null && Model.AllDoctors.Count() > 0 )
+            @if ( Model.AllDoctors != null && Model.AllDoctors.Count() > 0 )
             {
                 <div class="form-group">
                     <label asp-for="Doctor"></label>
-                    @Html.DropDownList( "Doctor",
+                    @*@Html.DropDownList( "Doctor",
                         new SelectList(Model.AllDoctors),
                         "Select your doctor",
-                        new { @class = "form-control" })
+                        new { @class = "form-control" })*@
                     @*<select asp-for="Doctor" class="form-control" asp-items="@(new SelectList( Model.AllDoctors, Model.Doctor, "LastName" ))">*@
-                    @*@foreach( var dr in Model.AllDoctors )
-                            {
-                                var name = dr.LastName + ", " + dr.FirstName + ", " + dr.DegreeAbbreviation;
-                                @:<option value="@dr.UserName">@name</option>
-                            }
-                        </select>*@
+                    <select asp-for="Doctor" class="form-control">
+                        @foreach ( var dr in Model.AllDoctors )
+                        {
+                            var name = dr.LastName + ", " + dr.FirstName + ", " + dr.DegreeAbbreviation;
+                            @:<option value="@dr.UserName">@name</option>
+                        }
+                    </select>
                 </div>
             }
-            @if( User.IsInRole( Roles.DOCTOR ) )
+            @if ( User.IsInRole( Roles.DOCTOR ) )
             {
                 <div class="form-group">
                     <label asp-for="DegreeAbbreviation"></label>

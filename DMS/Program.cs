@@ -47,7 +47,7 @@ namespace DMS
 
             using( var scope = host.Services.CreateScope() )
             {
-                var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
+                //var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
                 //db.Database.EnsureCreated();//.Migrate();//
 
                 // Moved to Startup, not using EF Core due to errors

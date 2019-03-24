@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using DMS.Data;
+﻿using DMS.Data;
 using DMS.Models;
 using DMS.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,17 +10,20 @@ using System.Threading.Tasks;
 
 namespace DMS.Services
 {
-    public class EFApplicationUserRepository : IApplicationUserRepository
+    public class DbApplicationUserRepository : IApplicationUserRepository
     {
         private ApplicationDbContext _db;
+        private IAuditRepository _auditRepo;
 
 
         private UserManager<ApplicationUser> _userManager;
 
-        public EFApplicationUserRepository( ApplicationDbContext db,
+        public DbApplicationUserRepository( ApplicationDbContext db,
+                                            IAuditRepository auditRepo,
                                             UserManager<ApplicationUser> userManager )
         {
             _db = db;
+            _auditRepo = auditRepo;
             _userManager = userManager;
 
         } // constructor
@@ -37,9 +40,9 @@ namespace DMS.Services
         {
             var user = await ReadAsync(email);
 
-            if( user != null )
+            if ( user != null )
             {
-                if( !user.HasRole( roleName ) )
+                if ( !user.HasRole( roleName ) )
                 {
                     Debug.WriteLine( "User doesn't have role '" + roleName + "'. Adding..." );
                     await _userManager.AddToRoleAsync( user, roleName );//.Wait();
@@ -58,7 +61,7 @@ namespace DMS.Services
             ApplicationUser appUser = _db.Users
                 .Include( r => r.Roles )
                 .FirstOrDefault( u => u.Email == email );
-            
+
             return appUser;
 
         }
@@ -84,6 +87,9 @@ namespace DMS.Services
         {
             _db.Users.Add( applicationUser );
             await _db.SaveChangesAsync();
+            var auditChange = new AuditChange();
+            auditChange.CreateAuditTrail( AuditActionType.CREATE, applicationUser.Id, new ApplicationUser(), applicationUser );
+            await _auditRepo.CreateAsync( auditChange );
             return applicationUser;
 
         } // CreateAsync
@@ -92,7 +98,7 @@ namespace DMS.Services
         public async Task UpdateAsync( string username, ApplicationUser applicationUser )
         {
             var oldUser = await ReadAsync( username );
-            if( oldUser != null )
+            if ( oldUser != null )
             {
                 oldUser.UserName = applicationUser.UserName;
                 oldUser.Address1 = applicationUser.Address1;
@@ -108,6 +114,10 @@ namespace DMS.Services
                 _db.Entry( oldUser ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
 
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.UPDATE, applicationUser.Id, oldUser, applicationUser );
+                await _auditRepo.CreateAsync( auditChange );
+
                 return;
 
             } // if
@@ -118,8 +128,12 @@ namespace DMS.Services
         public async Task DeleteAsync( string username )
         {
             var user = await ReadAsync( username );
-            if( user != null )
+            if ( user != null )
             {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.DELETE, user.Id, user, new ApplicationUser() );
+                await _auditRepo.CreateAsync( auditChange );
+
                 _db.Users.Remove( user );
                 await _db.SaveChangesAsync();
             }

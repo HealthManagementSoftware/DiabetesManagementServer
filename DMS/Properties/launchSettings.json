@@ -12,6 +12,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
+        "KEYVAULT_ENDPOINT": "https://diabeteskey.vault.azure.net",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
