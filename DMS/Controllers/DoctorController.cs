@@ -23,10 +23,11 @@ namespace DMS.Controllers
         public async Task<IActionResult> Index()
         {
             var doctor = await _doctorRepository.ReadAsync( User.Identity.Name );
-            doctor.Patients = doctor.Patients
-                .OrderBy( l => l.LastName )
-                .ThenBy( f => f.FirstName )
-                .ToList();
+            if( doctor != null && doctor.Patients != null )
+                doctor.Patients = doctor.Patients
+                    .OrderBy( l => l.LastName )
+                    .ThenBy( f => f.FirstName )
+                    .ToList();
             return View( doctor );
 
         } // Index

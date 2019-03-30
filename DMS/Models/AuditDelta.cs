@@ -7,10 +7,13 @@ namespace DMS.Models
 {
     public class AuditDelta
     {
-        public string Id { get; set; }
         public string FieldName { get; set; }
         public string ValueBefore { get; set; }
         public string ValueAfter { get; set; }
+
+        public AuditDelta()
+        {
+        }
 
     } // class
 

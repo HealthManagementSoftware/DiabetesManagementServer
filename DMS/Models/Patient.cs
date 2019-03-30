@@ -22,6 +22,46 @@ namespace DMS.Models
         } // constructor
 
 
+        public static Patient Clone( Patient oldPatient)
+        {
+            return new Patient() {
+                FirstName = oldPatient.FirstName,
+                LastName = oldPatient.LastName,
+                Address1 = oldPatient.Address1,
+                Address2 = oldPatient.Address2,
+                City = oldPatient.City,
+                State = oldPatient.State,
+                Zip1 = oldPatient.Zip1,
+                Zip2 = oldPatient.Zip2,
+                Email = oldPatient.Email,
+                PhoneNumber = oldPatient.PhoneNumber,
+                DoctorUserName = oldPatient.DoctorUserName,
+                AccessFailedCount = oldPatient.AccessFailedCount,
+                ConcurrencyStamp = oldPatient.ConcurrencyStamp,
+                CreatedAt = oldPatient.CreatedAt,
+                UpdatedAt = oldPatient.UpdatedAt,
+                Doctor = oldPatient.Doctor,
+                DoctorId = oldPatient.DoctorId,
+                EmailConfirmed = oldPatient.EmailConfirmed,
+                Height = oldPatient.Height,
+                Weight = oldPatient.Weight,
+                Id = oldPatient.Id,
+                NormalizedEmail = oldPatient.NormalizedEmail,
+                NormalizedUserName = oldPatient.NormalizedUserName,
+                LockoutEnabled = oldPatient.LockoutEnabled,
+                LockoutEnd = oldPatient.LockoutEnd,
+                PhoneNumberConfirmed = oldPatient.PhoneNumberConfirmed,
+                PasswordHash = oldPatient.PasswordHash,
+                RemoteLoginExpiration = oldPatient.RemoteLoginExpiration,
+                RemoteLoginToken = oldPatient.RemoteLoginToken,
+                SecurityStamp = oldPatient.SecurityStamp,
+                TwoFactorEnabled = oldPatient.TwoFactorEnabled,
+                UserName = oldPatient.UserName
+            };
+
+        } // Clone
+
+
         /// <summary>Returns a <see cref="System.String" /> that represents this instance.</summary>
         /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
         public override string ToString()

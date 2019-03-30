@@ -80,7 +80,8 @@ namespace DMS.Controllers
                 {
                     FirstName = d.FirstName,
                     LastName = d.LastName,
-                    UserName = d.UserName
+                    UserName = d.UserName,
+                    DegreeAbbreviation = d.DegreeAbbreviation
                 } )
                 .ToList()
                 : new List<Doctor>();
@@ -113,117 +114,105 @@ namespace DMS.Controllers
         public async Task<IActionResult> Index( IndexViewModel model )
         {
             if( !ModelState.IsValid )
-            {
                 return View( model );
-            }
 
-            //ApplicationUser user = null;
-            //Doctor doctor = null;
-            //Patient patient = null;
+            var user = await _userManager.GetUserAsync( User );
+            await UpdateProfileItems( model, user );
 
-            // Convert to doctor if user is a doctor:
             if( User.IsInRole( Roles.DOCTOR ) )
             {
                 var doctor = await _doctorRepository.ReadAsync( User.Identity.Name );
                 if( doctor == null )
                     throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
-                doctor.DegreeAbbreviation = model.DegreeAbbreviation;
+
+                var currentDoctor = Doctor.Clone(doctor);
+                currentDoctor.DegreeAbbreviation = model.DegreeAbbreviation;
+                currentDoctor.FirstName = model.FirstName;
+                currentDoctor.LastName = model.LastName;
+                currentDoctor.Address1 = model.Address1;
+                currentDoctor.Address2 = model.Address2;
+                currentDoctor.City = model.City;
+                currentDoctor.State = model.State;
+                currentDoctor.Zip1 = model.Zip1;
+
+                currentDoctor.Zip2 = model.Zip2;
+                currentDoctor.Email = model.Email;
+                currentDoctor.PhoneNumber = model.PhoneNumber;
 
                 _logger.LogDebug( "****************DOCTOR Degree abbrev.: " + model.DegreeAbbreviation + "****************" );
 
                 // Update all common items among ApplicationUsers:
-                await UpdateProfileItems( model, doctor );
+                //await UpdateProfileItems( model, currentDoctor );
 
-                await _doctorRepository.UpdateAsync( User.Identity.Name, doctor );
+                await _doctorRepository.UpdateAsync( User.Identity.Name, currentDoctor );
 
-            } // if doctor
-
-            // Convert to patient if user is a patient:
+            }
             else if( User.IsInRole( Roles.PATIENT ) )
             {
                 var patient = await _patientRepository.ReadAsync( User.Identity.Name );
                 if( patient == null )
                     throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
-                //patient.CopyFrom( user );
-                if( model.Doctor != null )
-                {
-                    patient.Doctor = await _doctorRepository.ReadAsync( model.Doctor );
-                    patient.DoctorUserName = patient.Doctor.UserName;
-
-                } // if
 
                 _logger.LogDebug( "****************PATIENT****************" );
 
-                // Update all common items among ApplicationUsers:
-                await UpdateProfileItems( model, patient );
+                var currentPatient = Patient.Clone( patient );
+                currentPatient.FirstName = model.FirstName;
+                currentPatient.LastName = model.LastName;
+                currentPatient.Address1 = model.Address1;
+                currentPatient.Address2 = model.Address2;
+                currentPatient.City = model.City;
+                currentPatient.State = model.State;
+                currentPatient.Zip1 = model.Zip1;
 
-                await _patientRepository.UpdateAsync( User.Identity.Name, patient );
+                currentPatient.Zip2 = model.Zip2;
+                currentPatient.Email = model.Email;
+                currentPatient.PhoneNumber = model.PhoneNumber;
+                //await UpdateProfileItems( model, currentPatient );
+
+                //patient.CopyFrom( user );
+                if( model.Doctor != null )
+                {
+                    currentPatient.Doctor = await _doctorRepository.ReadAsync( model.Doctor );
+                    currentPatient.DoctorUserName = currentPatient.Doctor.UserName;
+
+                } // if
+
+                await _patientRepository.UpdateAsync( User.Identity.Name, currentPatient );
 
             } // if patient
             else
             {
-                var user = await _userManager.GetUserAsync( User );
-                if( user == null )
-                    throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
-
-                // Update all common items among ApplicationUsers:
-                await UpdateProfileItems( model, user );
-
-                _logger.LogDebug( "****************ApplicationUser****************" );
-
                 await _userRepository.UpdateAsync( user.UserName, user );
             }
 
             StatusMessage = "Your profile has been updated";
             return RedirectToAction( nameof( Index ) );
-        }
+
+        } // Index
 
 
         private async Task UpdateProfileItems( IndexViewModel model, ApplicationUser user )
         {
+            if( user == null )
+                throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
+
             var email = user.Email;
             if( model.Email != email )
             {
                 var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
                 if( !setEmailResult.Succeeded )
-                {
                     throw new ApplicationException( $"Unexpected error occurred setting email for user with ID '{user.Id}'." );
-                }
-            }
+
+            } // if
 
             var phoneNumber = user.PhoneNumber;
             if( model.PhoneNumber != phoneNumber )
             {
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
                 if( !setPhoneResult.Succeeded )
-                {
                     throw new ApplicationException( $"Unexpected error occurred setting phone number for user with ID '{user.Id}'." );
-                }
-            }
 
-            if( model.FirstName != user.FirstName )
-                user.FirstName = model.FirstName;
-
-            if( model.LastName != user.LastName )
-                user.LastName = model.LastName;
-
-            if( model.Address1 != user.Address1 )
-                user.Address1 = model.Address1;
-
-            if( model.Address2 != user.Address2 )
-                user.Address2 = model.Address2;
-
-            if( model.City != user.City )
-                user.City = model.City;
-
-            if( model.State != user.State )
-                user.State = model.State;
-
-            if( model.Zip1 != user.Zip1 )
-                user.Zip1 = model.Zip1;
-
-            if( model.Zip2 != user.Zip2 )
-                user.Zip2 = model.Zip2;
+            } // if
 
         } // UpdateProfileItems
 
@@ -233,15 +222,11 @@ namespace DMS.Controllers
         public async Task<IActionResult> SendVerificationEmail( IndexViewModel model )
         {
             if( !ModelState.IsValid )
-            {
                 return View( model );
-            }
 
             var user = await _userManager.GetUserAsync(User);
             if( user == null )
-            {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
-            }
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
@@ -259,19 +244,17 @@ namespace DMS.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if( user == null )
-            {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
-            }
 
             var hasPassword = await _userManager.HasPasswordAsync(user);
             if( !hasPassword )
-            {
                 return RedirectToAction( nameof( SetPassword ) );
-            }
 
             var model = new ChangePasswordViewModel { StatusMessage = StatusMessage };
             return View( model );
-        }
+
+        } // ChangePassword
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -360,7 +343,7 @@ namespace DMS.Controllers
             }
 
             var model = new ExternalLoginsViewModel { CurrentLogins = await _userManager.GetLoginsAsync(user) };
-            model.OtherLogins = ( await _signInManager.GetExternalAuthenticationSchemesAsync() )
+            model.OtherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
                 .Where( auth => model.CurrentLogins.All( ul => auth.Name != ul.LoginProvider ) )
                 .ToList();
             model.ShowRemoveButton = await _userManager.HasPasswordAsync( user ) || model.CurrentLogins.Count > 1;

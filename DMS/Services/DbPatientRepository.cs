@@ -11,14 +11,11 @@ namespace DMS.Services
     {
         private readonly ApplicationDbContext _db;
         private IAuditRepository _auditRepo;
-        private AuditDbContext _auditDb;
 
         public DbPatientRepository( ApplicationDbContext db,
-                                    AuditDbContext auditDb,
                                     IAuditRepository auditRepo )
         {
             _db = db;
-            _auditDb = auditDb;
             _auditRepo = auditRepo;
 
         } // Injection Constructor
@@ -55,9 +52,7 @@ namespace DMS.Services
 
             var auditChange = new AuditChange();
             auditChange.CreateAuditTrail( AuditActionType.CREATE, patient.Id, new Patient(), patient );
-            //_auditDb.AuditChanges.Add( auditChange );
-            //await _auditDb.SaveChangesAsync();
-            //await _auditRepo.CreateAsync( auditChange );
+            await _auditRepo.CreateAsync( auditChange );
 
             return patient;
 
@@ -67,8 +62,12 @@ namespace DMS.Services
         public async Task UpdateAsync( string username, Patient patient )
         {
             var oldPatient = await ReadAsync( username );
-            if ( oldPatient != null )
+            if( oldPatient != null )
             {
+                var auditChange = new AuditChange();
+                if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, oldPatient, patient ) )
+                    await _auditRepo.CreateAsync( auditChange );
+
                 oldPatient.FirstName = patient.FirstName;
                 oldPatient.LastName = patient.LastName;
                 oldPatient.Address1 = patient.Address1;
@@ -84,21 +83,15 @@ namespace DMS.Services
                 oldPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
                 oldPatient.Height = patient.Height;
                 oldPatient.Weight = patient.Weight;
-                if ( patient.DoctorId != null && oldPatient.DoctorId != patient.DoctorId )
+                if( !string.IsNullOrEmpty( patient.DoctorId ) && oldPatient.DoctorId != patient.DoctorId )
                     oldPatient.DoctorId = patient.DoctorId;
-                if ( patient.DoctorUserName != null && oldPatient.DoctorUserName != patient.DoctorUserName )
+                if( !string.IsNullOrEmpty( patient.DoctorUserName ) && oldPatient.DoctorUserName != patient.DoctorUserName )
                     oldPatient.DoctorUserName = patient.DoctorUserName;
-                if ( patient.Doctor != null )
+                if( patient.Doctor != null )
                     oldPatient.Doctor = oldPatient.Doctor;
-                //if ( oldPatient.Doctor != null && patient.Doctor != null
-                //    && oldPatient.Doctor.Id == patient.Doctor.Id )
-                //    _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
-
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, oldPatient, patient );
-                //_auditDb.AuditChanges.Add( auditChange );
-                //await _auditDb.SaveChangesAsync();
-                //await _auditRepo.CreateAsync( auditChange );
+                if ( oldPatient.Doctor != null && patient.Doctor != null
+                    && oldPatient.Doctor.Id == patient.Doctor.Id )
+                    _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
 
                 _db.Entry( oldPatient ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
@@ -111,13 +104,11 @@ namespace DMS.Services
         public async Task DeleteAsync( string username )
         {
             var patient = await ReadAsync( username );
-            if ( patient != null )
+            if( patient != null )
             {
                 var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.DELETE, patient.Id, patient, new Patient());
-                //_auditDb.AuditChanges.Add( auditChange );
-                //await _auditDb.SaveChangesAsync();
-                //await _auditRepo.CreateAsync( auditChange );
+                auditChange.CreateAuditTrail( AuditActionType.DELETE, patient.Id, patient, new Patient() );
+                await _auditRepo.CreateAsync( auditChange );
 
                 _db.Patients.Remove( patient );
                 await _db.SaveChangesAsync();
@@ -126,14 +117,16 @@ namespace DMS.Services
 
         } // DeleteAsync
 
+
         public ApplicationUser ReadPatient( string email )
         {
             return _db.Users.FirstOrDefault( u => u.Email == email );
         }
 
-        public bool Exists( string firstName/*, string lastName*/)
+
+        public bool Exists(string username)
         {
-            return _db.Patients.Any( fn => fn.FirstName == firstName/*, ln => ln.LastName ==lastName*/);
+            return _db.Patients.Any( p => p.UserName == username);
         }
 
     } // Class

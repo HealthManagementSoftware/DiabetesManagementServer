@@ -60,6 +60,7 @@ namespace DMS
             {
                 client = new DocumentClient( new Uri( configSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ), configSection[ DbInfo.KEY_AUTH_KEY ] );
                 CreateCosmosCollection( client, configSection[ DbInfo.KEY_DB_NAME ], DbInfo.COLLECTION_NAME ).Wait();
+                SeedRoles().Wait();
             }
             catch ( DocumentClientException de )
             {
@@ -133,6 +134,7 @@ namespace DMS
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
             } );
 
+
             // Added the following service to use the ApplicationUser, 
             // ApplicationRole, and ApplicationDbContext classes 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -149,7 +151,7 @@ namespace DMS
             {
                 //app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
+                //app.UseDatabaseErrorPage();
             }
             else
             {
@@ -179,9 +181,11 @@ namespace DMS
         {
             await client.CreateDatabaseIfNotExistsAsync( new Database { Id = dbName } );     // Create DB
 
+            RequestOptions options = new RequestOptions() { PartitionKey = new PartitionKey("Id") };
             await client.CreateDocumentCollectionIfNotExistsAsync(                           // Create "table"
                 UriFactory.CreateDatabaseUri( dbName ),
-                new DocumentCollection { Id = collectionName }
+                new DocumentCollection { Id = collectionName },
+                options
                 );
 
         } // StartCosmosConnection
