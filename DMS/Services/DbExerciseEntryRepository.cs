@@ -16,10 +16,13 @@ namespace DMS.Services
     public class DbExerciseEntryRepository : IExerciseEntryRepository
     {
         private readonly ApplicationDbContext _db;
+        private IAuditRepository _auditRepo;
 
-        public DbExerciseEntryRepository( ApplicationDbContext db )
+        public DbExerciseEntryRepository( ApplicationDbContext db,
+                                    IAuditRepository auditRepo )
         {
             _db = db;
+            _auditRepo = auditRepo;
 
         } // Injection Constructor
 
@@ -43,6 +46,11 @@ namespace DMS.Services
         {
             _db.ExerciseEntries.Add( exerciseentry );
             await _db.SaveChangesAsync();
+
+            var auditChange = new AuditChange();
+            auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseentry.Id.ToString(), new ExerciseEntry(), exerciseentry );
+            await _auditRepo.CreateAsync( auditChange );
+
             return exerciseentry;
 
         } // Create
@@ -53,7 +61,11 @@ namespace DMS.Services
             var oldExerciseEntry = await ReadAsync( id );
             if( oldExerciseEntry != null )
             {
-    			oldExerciseEntry.UserName = exerciseEntry.UserName;
+                var auditChange = new AuditChange();
+                if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, exerciseEntry.Id.ToString(), oldExerciseEntry, exerciseEntry ) )
+                    await _auditRepo.CreateAsync( auditChange );
+
+                oldExerciseEntry.UserName = exerciseEntry.UserName;
     			oldExerciseEntry.Patient = exerciseEntry.Patient;
     			oldExerciseEntry.Name = exerciseEntry.Name;
     			oldExerciseEntry.Minutes = exerciseEntry.Minutes;
@@ -73,6 +85,10 @@ namespace DMS.Services
             var exerciseentry = await ReadAsync( id );
             if( exerciseentry != null )
             {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.DELETE, id.ToString(), exerciseentry, new ExerciseEntry() );
+                await _auditRepo.CreateAsync( auditChange );
+
                 _db.ExerciseEntries.Remove( exerciseentry );
                 await _db.SaveChangesAsync();
             }
@@ -84,6 +100,11 @@ namespace DMS.Services
         {
             _db.ExerciseEntries.Add(exerciseEntry);
             _db.SaveChanges();
+
+            var auditChange = new AuditChange();
+            auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseEntry.Id.ToString(), new ExerciseEntry(), exerciseEntry );
+            _auditRepo.CreateAsync( auditChange );
+
             return exerciseEntry;
         }// ExerciseEntry Create
 
@@ -98,13 +119,13 @@ namespace DMS.Services
             foreach ( ExerciseEntry exerciseEntry in exerciseEntries )
             {
                 ExerciseEntry dbExerciseEntry = await ReadAsync( exerciseEntry.Id );
-                if ( dbExerciseEntry == null )                  // If meal entry doesn't exist
+                if ( dbExerciseEntry == null )                                  // If meal entry doesn't exist
                 {
                     // Create in the database
                     await CreateAsync( exerciseEntry );
 
                 }
-                else if ( dbExerciseEntry.UpdatedAt < exerciseEntry.UpdatedAt )
+                else if ( dbExerciseEntry.UpdatedAt < exerciseEntry.UpdatedAt ) // Otherwise...
                 {
                     // Update in the database
                     await UpdateAsync( exerciseEntry.Id, exerciseEntry );

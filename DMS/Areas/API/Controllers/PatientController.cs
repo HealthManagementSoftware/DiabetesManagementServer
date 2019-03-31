@@ -78,9 +78,9 @@ namespace DMS.Areas.API.Controllers
             return new JsonResult( new
             {
                 success = true,
-                errorCode = ErrorCode.NO_ERROR,
-                patient,
-                patient.DoctorUserName
+                errorCode = ErrorCode.NO_ERROR
+                //patient,                              // <-- HIPAA compliance - only transmit data needed to complete a task
+                //doctorUserName = patient?.Doctor?.UserName
             } );
 
         } // Sync

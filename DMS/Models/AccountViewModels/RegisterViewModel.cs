@@ -56,9 +56,9 @@ namespace DMS.Models.AccountViewModels
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
-                DoctorId = doctor.Id,
+                //DoctorId = doctor?.Id,
                 Doctor = doctor,
-                DoctorUserName = DoctorUserName,
+                //DrUserName = DoctorUserName,
                 UserName = Email,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now

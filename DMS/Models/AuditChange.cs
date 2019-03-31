@@ -39,12 +39,12 @@ namespace DMS.Models
         /// <param name="keyFieldID"></param>
         /// <param name="oldObject"></param>
         /// <param name="newObject"></param>
-        public bool CreateAuditTrail( int auditActionType, string keyFieldID, Object oldObject, Object newObject, bool compareChildren = false )
+        public bool CreateAuditTrail( int auditActionType, string keyFieldID, Object oldObject, Object newObject, bool boolCompareChildren = false )
         {
             // get the differance  
             var compareLogic = new CompareLogic();
             compareLogic.Config.MaxDifferences = Int32.MaxValue;
-            compareLogic.Config.CompareChildren = compareChildren;
+            compareLogic.Config.CompareChildren = boolCompareChildren;
 
             // This generates the deltas:
             ComparisonResult compResult = compareLogic.Compare(oldObject, newObject);

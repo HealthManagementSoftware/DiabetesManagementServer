@@ -13,10 +13,13 @@ namespace DMS.Services
     public class DbMealItemRepository : IMealItemRepository
     {
         private readonly ApplicationDbContext _db;
+        private IAuditRepository _auditRepo;
 
-        public DbMealItemRepository( ApplicationDbContext db )
+        public DbMealItemRepository( ApplicationDbContext db,
+                                    IAuditRepository auditRepo )
         {
             _db = db;
+            _auditRepo = auditRepo;
 
         } // Injection Constructor
 
@@ -48,7 +51,12 @@ namespace DMS.Services
                 mealEntry.MealItems.Add( mealItem );    // Associate item with the entry
                 mealItem.Meal = mealEntry;              // Associate the entry with the item
                 await _db.SaveChangesAsync();
+
             }// End if mealEntry not null statement.
+
+            var auditChange = new AuditChange();
+            auditChange.CreateAuditTrail( AuditActionType.CREATE, mealItem.Id.ToString(), new MealItem(), mealItem );
+            await _auditRepo.CreateAsync( auditChange );
 
             return mealItem;
 
@@ -57,18 +65,22 @@ namespace DMS.Services
 
         public async Task UpdateAsync( Guid id, MealItem mealItem )
         {
-            var oldMealItem = await ReadAsync( id );
-            if ( oldMealItem != null )
+            var dbMealItem = await ReadAsync( id );
+            if ( dbMealItem != null )
             {
-                oldMealItem.Name = mealItem.Name;
-                oldMealItem.Carbs = mealItem.Carbs;
-                oldMealItem.Servings = mealItem.Servings;
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.UPDATE, mealItem.Id.ToString(), dbMealItem, mealItem );
+                await _auditRepo.CreateAsync( auditChange );
+
+                dbMealItem.Name = mealItem.Name;
+                dbMealItem.Carbs = mealItem.Carbs;
+                dbMealItem.Servings = mealItem.Servings;
                 //oldMealItem.Meal = mealItem.Meal;
                 //oldMealItem.MealId = mealItem.MealId;
-                oldMealItem.UpdatedAt = mealItem.UpdatedAt;
+                dbMealItem.UpdatedAt = mealItem.UpdatedAt;
                 //oldMealItem.UpdatedAt = mealItem.UpdatedAt;
-                _db.Entry( oldMealItem.Meal ).State = EntityState.Unchanged;
-                _db.Entry( oldMealItem ).State = EntityState.Modified;
+                _db.Entry( dbMealItem.Meal ).State = EntityState.Unchanged;
+                _db.Entry( dbMealItem ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
                 return;
             }
@@ -78,10 +90,14 @@ namespace DMS.Services
 
         public async Task DeleteAsync( Guid id )
         {
-            var mealitem = await ReadAsync( id );
-            if ( mealitem != null )
+            var mealItem = await ReadAsync( id );
+            if ( mealItem != null )
             {
-                _db.MealItems.Remove( mealitem );
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.DELETE, mealItem.Id.ToString(), mealItem, new MealItem() );
+                await _auditRepo.CreateAsync( auditChange );
+
+                _db.MealItems.Remove( mealItem );
                 await _db.SaveChangesAsync();
             }
             return;

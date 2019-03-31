@@ -64,13 +64,13 @@ namespace DMS.Controllers
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
-            Doctor doctor = User.IsInRole( Roles.DOCTOR )
-                ? await _doctorRepository.ReadAsync( User.Identity.Name )
-                : null;
-
             Patient patient = User.IsInRole( Roles.PATIENT )
                 ? await _patientRepository.ReadAsync( User.Identity.Name )
                 : null;
+
+            Doctor doctor = User.IsInRole( Roles.DOCTOR )
+                ? await _doctorRepository.ReadAsync( User.Identity.Name )
+                : await _doctorRepository.ReadAsync( patient?.Doctor?.UserName );
 
             // If a user is a patient, get all doctors for the list:
             List<Doctor> doctorList = User.IsInRole( Roles.PATIENT )
@@ -103,7 +103,7 @@ namespace DMS.Controllers
                 StatusMessage = StatusMessage,
                 DegreeAbbreviation = doctor?.DegreeAbbreviation,
                 AllDoctors = doctorList,
-                Doctor = patient?.Doctor?.UserName
+                Doctor = doctor?.UserName
             };
 
             return View( model );
@@ -173,7 +173,8 @@ namespace DMS.Controllers
                 if( model.Doctor != null )
                 {
                     currentPatient.Doctor = await _doctorRepository.ReadAsync( model.Doctor );
-                    currentPatient.DoctorUserName = currentPatient.Doctor.UserName;
+                    //currentPatient.DrUserName = currentPatient.Doctor.UserName;
+                    //currentPatient.DoctorId = currentPatient.Doctor.Id;
 
                 } // if
 

@@ -86,8 +86,8 @@ namespace DMS.Areas.API.Controllers
                             patient.State,
                             patient.Zip1,
                             patient.Zip2,
-                            patient.DoctorUserName,
-                            patient.DoctorId
+                            doctorUserName = patient?.Doctor?.UserName
+                            //patient.DoctorId
                         }
                         );
                 Debug.WriteLine( res.ToString() );
@@ -119,7 +119,7 @@ namespace DMS.Areas.API.Controllers
             var doctor = await _doctorRepository.ReadAsync( model.DoctorUserName );
             Patient patient = await model.GetNewPatient( _doctorRepository );
             patient.Doctor = doctor;
-            patient.DoctorUserName = doctor.UserName;
+            //patient.DoctorUserName = doctor.UserName;
 
             var result = await _userManager.CreateAsync(patient, model.Password);
 
@@ -129,9 +129,8 @@ namespace DMS.Areas.API.Controllers
 
                 patient.CreatedAt = DateTime.Now;
                 patient.UpdatedAt = patient.CreatedAt;
-                //patient = await _patientRepository.ReadAsync( model.Email );
-                //patient.Doctor = doctor;
-                //patient.DoctorUserName = model.DoctorUserName;
+                //patient.DrUserName = model.DoctorUserName;
+                //patient.DoctorId = doctor?.Id;
                 await _patientRepository.UpdateAsync( model.Email, patient );
 
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(patient);
@@ -153,10 +152,10 @@ namespace DMS.Areas.API.Controllers
                     errorCode = ErrorCode.USER_ALREADY_LOGGED_IN,
                     patient.RemoteLoginToken,
                     patient.RemoteLoginExpiration,
-                    patient.DoctorUserName,
+                    doctorUserName = patient?.Doctor?.UserName,
                     patient.Email,
                     patient.UserName,
-                    doctorId = patient.Doctor != null ? patient.Doctor.Id : ""
+                    doctorId = patient?.Doctor?.Id
                 } );
             
 

@@ -5,8 +5,11 @@ namespace DMS.Models
 {
     public class Patient : ApplicationUser
     {
-        public string DoctorUserName { get; set; }
-        public string DoctorId { get; set; }
+        // Dr info: Must have both if using Dr UserName. Can use only DoctorId, but EF already does this
+        //      implicitly, so should use either NONE or BOTH DrUserName and DoctorId. However, when 
+        //      handling these values ourselves, EF will fail to eager-load the Doctor:
+        //public string DrUserName { get; set; }
+        //public string DoctorId { get; set; }
         public Doctor Doctor { get; set; }
         public List<GlucoseEntry> GlucoseEntries { get; set; }
         public List<ExerciseEntry> ExerciseEntries { get; set; }
@@ -35,13 +38,13 @@ namespace DMS.Models
                 Zip2 = oldPatient.Zip2,
                 Email = oldPatient.Email,
                 PhoneNumber = oldPatient.PhoneNumber,
-                DoctorUserName = oldPatient.DoctorUserName,
                 AccessFailedCount = oldPatient.AccessFailedCount,
                 ConcurrencyStamp = oldPatient.ConcurrencyStamp,
                 CreatedAt = oldPatient.CreatedAt,
                 UpdatedAt = oldPatient.UpdatedAt,
                 Doctor = oldPatient.Doctor,
-                DoctorId = oldPatient.DoctorId,
+                //DrUserName = oldPatient.DrUserName,
+                //DoctorId = oldPatient.DoctorId,
                 EmailConfirmed = oldPatient.EmailConfirmed,
                 Height = oldPatient.Height,
                 Weight = oldPatient.Weight,
@@ -92,7 +95,7 @@ namespace DMS.Models
                 + "\nGlucoseEntries: " + glucoseString
                 + "\nExerciseEntries: " + exerciseString
                 + "\nMealEntries: " + mealEntryString
-                + "\nDoctorUserName: " + DoctorUserName;
+                + "\nDoctorUserName: " + Doctor.UserName;
 
         } // ToString
 

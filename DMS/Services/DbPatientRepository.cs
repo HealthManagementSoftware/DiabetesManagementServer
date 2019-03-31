@@ -61,39 +61,43 @@ namespace DMS.Services
 
         public async Task UpdateAsync( string username, Patient patient )
         {
-            var oldPatient = await ReadAsync( username );
-            if( oldPatient != null )
+            var dbPatient = await ReadAsync( username );
+            if( dbPatient != null )
             {
                 var auditChange = new AuditChange();
-                if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, oldPatient, patient ) )
+                if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, dbPatient, patient ) )
                     await _auditRepo.CreateAsync( auditChange );
 
-                oldPatient.FirstName = patient.FirstName;
-                oldPatient.LastName = patient.LastName;
-                oldPatient.Address1 = patient.Address1;
-                oldPatient.Address2 = patient.Address2;
-                oldPatient.City = patient.City;
-                oldPatient.State = patient.State;
-                oldPatient.Zip1 = patient.Zip1;
-                oldPatient.Zip2 = patient.Zip2;
-                oldPatient.PhoneNumber = patient.PhoneNumber;
-                oldPatient.Email = patient.Email;
-                oldPatient.CreatedAt = patient.CreatedAt;
-                oldPatient.UpdatedAt = patient.UpdatedAt;
-                oldPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
-                oldPatient.Height = patient.Height;
-                oldPatient.Weight = patient.Weight;
-                if( !string.IsNullOrEmpty( patient.DoctorId ) && oldPatient.DoctorId != patient.DoctorId )
-                    oldPatient.DoctorId = patient.DoctorId;
-                if( !string.IsNullOrEmpty( patient.DoctorUserName ) && oldPatient.DoctorUserName != patient.DoctorUserName )
-                    oldPatient.DoctorUserName = patient.DoctorUserName;
-                if( patient.Doctor != null )
-                    oldPatient.Doctor = oldPatient.Doctor;
-                if ( oldPatient.Doctor != null && patient.Doctor != null
-                    && oldPatient.Doctor.Id == patient.Doctor.Id )
+                dbPatient.FirstName = patient.FirstName;
+                dbPatient.LastName = patient.LastName;
+                dbPatient.Address1 = patient.Address1;
+                dbPatient.Address2 = patient.Address2;
+                dbPatient.City = patient.City;
+                dbPatient.State = patient.State;
+                dbPatient.Zip1 = patient.Zip1;
+                dbPatient.Zip2 = patient.Zip2;
+                dbPatient.PhoneNumber = patient.PhoneNumber;
+                dbPatient.Email = patient.Email;
+                dbPatient.CreatedAt = patient.CreatedAt;
+                dbPatient.UpdatedAt = patient.UpdatedAt;
+                dbPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
+                dbPatient.Height = patient.Height;
+                dbPatient.Weight = patient.Weight;
+                if( dbPatient?.Doctor?.UserName == patient?.Doctor?.UserName )
+                {
                     _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
+                }
+                else
+                {
+                    //if( !string.IsNullOrEmpty( patient.DoctorId ) && oldPatient.DoctorId != patient.DoctorId )
+                    //    oldPatient.DoctorId = patient.DoctorId;
+                    //if( !string.IsNullOrEmpty( patient.DrUserName ) && dbPatient.DrUserName != patient.DrUserName )
+                    //    dbPatient.DrUserName = patient.DrUserName;
+                    if( patient.Doctor != null )
+                        dbPatient.Doctor = patient.Doctor;
+                }
 
-                _db.Entry( oldPatient ).State = EntityState.Modified;
+                _db.Entry( dbPatient ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
                 return;
             }
@@ -124,9 +128,9 @@ namespace DMS.Services
         }
 
 
-        public bool Exists(string username)
+        public bool Exists( string username )
         {
-            return _db.Patients.Any( p => p.UserName == username);
+            return _db.Patients.Any( p => p.UserName == username );
         }
 
     } // Class

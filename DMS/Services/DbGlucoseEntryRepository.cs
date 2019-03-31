@@ -13,10 +13,13 @@ namespace DMS.Services
     public class DbGlucoseEntriesRepository : IGlucoseEntryRepository
     {
         private readonly ApplicationDbContext _db;
+        private IAuditRepository _auditRepo;
 
-        public DbGlucoseEntriesRepository( ApplicationDbContext db )
+        public DbGlucoseEntriesRepository( ApplicationDbContext db,
+                                    IAuditRepository auditRepo )
         {
             _db = db;
+            _auditRepo = auditRepo;
 
         } // Injection Constructor
 
@@ -37,29 +40,38 @@ namespace DMS.Services
         } // ReadAll
 
 
-        public async Task<GlucoseEntry> CreateAsync( GlucoseEntry GlucoseEntries )
+        public async Task<GlucoseEntry> CreateAsync( GlucoseEntry glucoseEntry )
         {
-            _db.GlucoseEntries.Add( GlucoseEntries );
+            _db.GlucoseEntries.Add( glucoseEntry );
             await _db.SaveChangesAsync();
-            return GlucoseEntries;
+
+            var auditChange = new AuditChange();
+            auditChange.CreateAuditTrail( AuditActionType.CREATE, glucoseEntry.Id.ToString(), new GlucoseEntry(), glucoseEntry );
+            await _auditRepo.CreateAsync( auditChange );
+
+            return glucoseEntry;
 
         } // Create
 
 
-        public async Task UpdateAsync( Guid id, GlucoseEntry GlucoseEntry )
+        public async Task UpdateAsync( Guid id, GlucoseEntry glucoseEntry )
         {
-            var oldGlucoseEntries = await ReadAsync( id );
-            if( oldGlucoseEntries != null )
+            var dbGlucoseEntry = await ReadAsync( id );
+            if( dbGlucoseEntry != null )
             {
-                oldGlucoseEntries.UserName = GlucoseEntry.UserName;
-                oldGlucoseEntries.Patient = GlucoseEntry.Patient;
-    			oldGlucoseEntries.Measurement = GlucoseEntry.Measurement;
-    			oldGlucoseEntries.BeforeAfter = GlucoseEntry.BeforeAfter;
-    			oldGlucoseEntries.WhichMeal = GlucoseEntry.WhichMeal;
-    			oldGlucoseEntries.CreatedAt = GlucoseEntry.CreatedAt;
-                oldGlucoseEntries.UpdatedAt = GlucoseEntry.UpdatedAt;
-                oldGlucoseEntries.Timestamp = GlucoseEntry.Timestamp;
-                _db.Entry( oldGlucoseEntries ).State = EntityState.Modified;
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.UPDATE, dbGlucoseEntry.Id.ToString(), dbGlucoseEntry, glucoseEntry );
+                await _auditRepo.CreateAsync( auditChange );
+
+                dbGlucoseEntry.UserName = glucoseEntry.UserName;
+                dbGlucoseEntry.Patient = glucoseEntry.Patient;
+    			dbGlucoseEntry.Measurement = glucoseEntry.Measurement;
+    			dbGlucoseEntry.BeforeAfter = glucoseEntry.BeforeAfter;
+    			dbGlucoseEntry.WhichMeal = glucoseEntry.WhichMeal;
+    			dbGlucoseEntry.CreatedAt = glucoseEntry.CreatedAt;
+                dbGlucoseEntry.UpdatedAt = glucoseEntry.UpdatedAt;
+                dbGlucoseEntry.Timestamp = glucoseEntry.Timestamp;
+                _db.Entry( dbGlucoseEntry ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
                 return;
             }
@@ -69,10 +81,14 @@ namespace DMS.Services
 
         public async Task DeleteAsync( Guid id )
         {
-            var GlucoseEntries = await ReadAsync( id );
-            if( GlucoseEntries != null )
+            var glucoseEntry = await ReadAsync( id );
+            if( glucoseEntry != null )
             {
-                _db.GlucoseEntries.Remove( GlucoseEntries );
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.UPDATE, id.ToString(), glucoseEntry, new GlucoseEntry() );
+                await _auditRepo.CreateAsync( auditChange );
+
+                _db.GlucoseEntries.Remove( glucoseEntry );
                 await _db.SaveChangesAsync();
             }
             return;
