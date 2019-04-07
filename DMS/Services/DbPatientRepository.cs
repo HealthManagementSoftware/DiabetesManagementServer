@@ -83,9 +83,11 @@ namespace DMS.Services
                 dbPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
                 dbPatient.Height = patient.Height;
                 dbPatient.Weight = patient.Weight;
+
+                _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
+
                 if( dbPatient?.Doctor?.UserName == patient?.Doctor?.UserName )
                 {
-                    _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
                 }
                 else
                 {
@@ -93,8 +95,8 @@ namespace DMS.Services
                     //    oldPatient.DoctorId = patient.DoctorId;
                     //if( !string.IsNullOrEmpty( patient.DrUserName ) && dbPatient.DrUserName != patient.DrUserName )
                     //    dbPatient.DrUserName = patient.DrUserName;
-                    if( patient.Doctor != null )
-                        dbPatient.Doctor = patient.Doctor;
+                    //if( patient.Doctor != null )
+                        //dbPatient.Doctor = patient.Doctor;
                 }
 
                 _db.Entry( dbPatient ).State = EntityState.Modified;

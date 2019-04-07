@@ -1,6 +1,6 @@
 ﻿body {
     padding-top: 50px;
-    padding-bottom: 20px;
+    padding-bottom: 40px;
 }
 
 /* Wrapping element */
@@ -8,6 +8,7 @@
 .body-content {
     padding-left: 15px;
     padding-right: 15px;
+    min-height:100%
 }
 
 /* Carousel */
@@ -38,6 +39,11 @@
     font-weight: bold;
 }
 
+footer {
+    position: absolute;
+    bottom: 20px;
+}
+
 input, select, option {
     color: #333;
 }
@@ -51,6 +57,10 @@ input, select, option {
     .jumbotron h2 {
         color: #333 !important;
     }
+
+.logo {
+    height: 30px;
+}
 
 .mtop-2 {
     margin-top: 2em;

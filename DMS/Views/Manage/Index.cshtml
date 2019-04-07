@@ -16,28 +16,27 @@
                 <label asp-for="Username"></label>
                 <input asp-for="Username" class="form-control" disabled />
             </div>
-            @if( Model.Doctor != null )
-            {
-                <label>Current Doctor: </label>
-                <span>@Model.Doctor</span>
-            }
             @if( Model.AllDoctors != null && Model.AllDoctors.Count() > 0 )
             {
                 <div class="form-group">
-                    <label asp-for="Doctor"></label>
+                    <label asp-for="DoctorFullName"></label>
+                    @if( Model.DoctorUserName != null )
+                    {
+                        <div class="form-control">@Model.DoctorFullName</div>
+                    }
                     @*@Html.DropDownList( "Doctor",
                         new SelectList(Model.AllDoctors),
                         "Select your doctor",
                         new { @class = "form-control" })*@
                     @*<select asp-for="Doctor" class="form-control" asp-items="@(new SelectList( Model.AllDoctors, Model.Doctor, "LastName" ))">*@
-                    <select asp-for="Doctor" class="form-control">
-                        @foreach( var dr in Model.AllDoctors )
-                        {
-                            var sel = dr.UserName == Model.Doctor ? "selected" : "";
-                            var name = dr.LastName + ", " + dr.FirstName + ", " + dr.DegreeAbbreviation;
-                            @:<option value="@dr.UserName" @sel>@name</option>
-                        }
-                    </select>
+                    @*<select asp-for="Doctor" class="form-control">
+                            @foreach( var dr in Model.AllDoctors )
+                            {
+                                var sel = dr.UserName == Model.Doctor ? "selected" : "";
+                                var name = dr.LastName + ", " + dr.FirstName + ", " + dr.DegreeAbbreviation;
+                                @:<option value="@dr.UserName" @sel>@name</option>
+                            }
+                        </select>*@
                 </div>
             }
             @if( User.IsInRole( Roles.DOCTOR ) )

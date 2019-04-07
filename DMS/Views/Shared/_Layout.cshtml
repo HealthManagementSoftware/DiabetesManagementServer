@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - My Glucose</title>
+    <title>@ViewData["Title"] - Diabetes Assistant</title>
 
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
@@ -29,24 +29,27 @@
                     <span class="icon-bar"></span>
                 </button>
                 <a href="@Url.Action("Index", "Home")" class="navbar-brand">
-                    <img src="~/images/Logo.png" title="title" alt="additional title" />
+                    <img src="~/images/Logo.png" title="Diabetes Assistant" alt="Diabetes Assistant" class="logo" />
                 </a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    @*<li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>*@
                 </ul>
-                @await Html.PartialAsync("_LoginPartial")
+                @await Html.PartialAsync( "_LoginPartial" )
             </div>
         </div>
     </nav>
     <div class="container body-content">
         @RenderBody()
-        <hr />
+
         <footer>
-            <p style="color:white">&copy; 2018 - MyGlucose</p>
+            <div class="container footer">
+                <hr />
+                <p>&copy; 2018, @DateTime.Now.Year - Health Management Software</p>
+            </div>
         </footer>
     </div>
 
@@ -71,6 +74,6 @@
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 
-    @RenderSection("Scripts", required: false)
+    @RenderSection( "Scripts", required: false )
 </body>
 </html>

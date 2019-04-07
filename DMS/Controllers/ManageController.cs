@@ -52,8 +52,10 @@ namespace DMS.Controllers
             _patientRepository = patientRepo;
         }
 
+
         [TempData]
         public string StatusMessage { get; set; }
+
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -64,13 +66,18 @@ namespace DMS.Controllers
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
-            Patient patient = User.IsInRole( Roles.PATIENT )
-                ? await _patientRepository.ReadAsync( User.Identity.Name )
-                : null;
+            Patient patient = null;
+            Doctor doctor = null;
 
-            Doctor doctor = User.IsInRole( Roles.DOCTOR )
-                ? await _doctorRepository.ReadAsync( User.Identity.Name )
-                : await _doctorRepository.ReadAsync( patient?.Doctor?.UserName );
+            if (User.IsInRole( Roles.PATIENT ))
+            {
+                patient = await _patientRepository.ReadAsync( User.Identity.Name );
+                doctor = _doctorRepository.ReadAll().Where( u => u.UserName == patient.Doctor.UserName ).FirstOrDefault();
+            }
+            else if ( User.IsInRole( Roles.DOCTOR ) )
+            {
+                doctor = await _doctorRepository.ReadAsync( User.Identity.Name );
+            }
 
             // If a user is a patient, get all doctors for the list:
             List<Doctor> doctorList = User.IsInRole( Roles.PATIENT )
@@ -102,12 +109,15 @@ namespace DMS.Controllers
                 Zip2 = user.Zip2,
                 StatusMessage = StatusMessage,
                 DegreeAbbreviation = doctor?.DegreeAbbreviation,
+                DoctorFullName = doctor?.FirstName + " " + doctor?.LastName + ", " + doctor?.DegreeAbbreviation,
                 AllDoctors = doctorList,
-                Doctor = doctor?.UserName
+                DoctorUserName = doctor?.UserName
             };
 
             return View( model );
-        }
+
+        } // Index
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -170,9 +180,9 @@ namespace DMS.Controllers
                 //await UpdateProfileItems( model, currentPatient );
 
                 //patient.CopyFrom( user );
-                if( model.Doctor != null )
+                if( model.DoctorUserName != null )
                 {
-                    currentPatient.Doctor = await _doctorRepository.ReadAsync( model.Doctor );
+                    currentPatient.Doctor = await _doctorRepository.ReadAsync( model.DoctorUserName );
                     //currentPatient.DrUserName = currentPatient.Doctor.UserName;
                     //currentPatient.DoctorId = currentPatient.Doctor.Id;
 

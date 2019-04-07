@@ -8,10 +8,16 @@ html {
     font-family: sans-serif;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+    font-size: 10px;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 body {
-    margin: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+    background-color: #fff;
 }
 
 article,
@@ -1397,19 +1403,6 @@ th {
         box-sizing: border-box;
     }
 
-html {
-    font-size: 10px;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
-
-body {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #ffffff;
-    background-color: #4D8F1A;
-}
-
 input,
 button,
 select,
@@ -1522,7 +1515,6 @@ h6,
     font-family: inherit;
     font-weight: 500;
     line-height: 1.1;
-    color: #ffffff;
 }
 
     h1 small,
@@ -4895,14 +4887,11 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
             position: relative;
             display: block;
             padding: 10px 15px;
-            color: #ffffff;
         }
 
             .nav > li > a:hover,
             .nav > li > a:focus {
-                color: #ffffff;
                 border-color: #4D8F1A;
-                transform: scale(1.1);
                 background-color: transparent;
                 text-decoration: none;
             }
@@ -5122,7 +5111,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 
 .navbar {
     position: relative;
-    min-height: 50px;
+    min-height: 40px;
     margin-bottom: 20px;
     border: 1px solid transparent;
 }
@@ -5249,8 +5238,8 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 
 .navbar-brand {
     float: left;
-    height: 50px;
-    padding: 7px 7px;
+    height: 40px;
+    padding: 10px 8px;
     font-size: 18px;
     line-height: 20px;
 }
@@ -5259,7 +5248,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     .navbar-brand:focus {
         color: #AA66CC;
         border-color: #4D8F1A;
-        transform: scale(1.1);
         background-color: transparent;
     }
 
@@ -5527,7 +5515,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
         .navbar-default .navbar-brand:focus {
             color: #AA66CC;
             border-color: #4D8F1A;
-            transform: scale(1.1);
             background-color: transparent;
         }
 
@@ -5543,7 +5530,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
         .navbar-default .navbar-nav > li > a:focus {
             color: #AA66CC;
             border-color: #4D8F1A;
-            transform: scale(1.1);
             background-color: transparent;
         }
 
@@ -5552,7 +5538,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     .navbar-default .navbar-nav > .active > a:focus {
         color: #AA66CC;
         border-color: #4D8F1A;
-        transform: scale(1.1);
         background-color: transparent;
     }
 
@@ -5561,7 +5546,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     .navbar-default .navbar-nav > .disabled > a:focus {
         color: #AA66CC;
         border-color: #4D8F1A;
-        transform: scale(1.1);
         background-color: transparent;
     }
 
@@ -5573,7 +5557,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
         .navbar-default .navbar-toggle:focus {
             color: #AA66CC;
             border-color: #4D8F1A;
-            transform: scale(1.1);
             background-color: transparent;
         }
 
@@ -5625,9 +5608,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 
     .navbar-default .navbar-link:hover {
         color: #ffffff;
-        transform: scale(1.2);
         text-decoration: none;
-        font-weight: bold;
         background-color: transparent;
     }
 
@@ -5648,8 +5629,8 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     }
 
 .navbar-inverse {
-    background-color: #2D5013;
-    border-color: #2D5013;
+    background-color: #386e89;
+    border-color: #386e89;
 }
 
     .navbar-inverse .navbar-brand {
@@ -5659,9 +5640,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
         .navbar-inverse .navbar-brand:hover,
         .navbar-inverse .navbar-brand:focus {
             color: #ffffff;
-            transform: scale(1.2);
             text-decoration: none;
-            font-weight: bold;
             background-color: transparent;
         }
 
@@ -5676,9 +5655,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
         .navbar-inverse .navbar-nav > li > a:hover,
         .navbar-inverse .navbar-nav > li > a:focus {
             color: #ffffff;
-            transform: scale(1.2);
             text-decoration: none;
-            font-weight: bold;
             background-color: transparent;
         }
 
@@ -5686,8 +5663,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     .navbar-inverse .navbar-nav > .active > a:hover,
     .navbar-inverse .navbar-nav > .active > a:focus {
         color: #AA66CC;
-        border-color: #4D8F1A;
-        transform: scale(1.1);
         background-color: transparent;
     }
 
@@ -5705,15 +5680,11 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
         .navbar-inverse .navbar-toggle:hover,
         .navbar-inverse .navbar-toggle:focus {
             color: #AA66CC;
-            border-color: #4D8F1A;
-            transform: scale(1.1);
             background-color: transparent;
         }
 
         .navbar-inverse .navbar-toggle .icon-bar {
             color: #AA66CC;
-            border-color: #4D8F1A;
-            transform: scale(1.1);
             background-color: transparent;
         }
 
@@ -5726,8 +5697,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     .navbar-inverse .navbar-nav > .open > a:hover,
     .navbar-inverse .navbar-nav > .open > a:focus {
         color: #AA66CC;
-        border-color: #4D8F1A;
-        transform: scale(1.1);
         background-color: transparent;
     }
 
@@ -5771,9 +5740,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 
     .navbar-inverse .navbar-link:hover {
         color: #ffffff;
-        transform: scale(1.2);
         text-decoration: none;
-        font-weight: bold;
         background-color: transparent;
     }
 
