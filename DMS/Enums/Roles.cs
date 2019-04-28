@@ -9,6 +9,7 @@ namespace DMS
     {
         public const string DOCTOR = "Doctor";
         public const string PATIENT = "Patient";
+        public const string DEVELOPER = "Dev";
 
     } // class
 

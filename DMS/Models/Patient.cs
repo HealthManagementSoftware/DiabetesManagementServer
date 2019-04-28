@@ -15,12 +15,15 @@ namespace DMS.Models
         public List<ExerciseEntry> ExerciseEntries { get; set; }
         public List<MealEntry> MealEntries { get; set; }
 
+        public bool HasSignedHIPAANotice { get; set; }
+
         public Patient()
         {
             Doctor = new Doctor();
             GlucoseEntries = new List<GlucoseEntry>();
             ExerciseEntries = new List<ExerciseEntry>();
             MealEntries = new List<MealEntry>();
+            HasSignedHIPAANotice = false;
 
         } // constructor
 
@@ -59,7 +62,11 @@ namespace DMS.Models
                 RemoteLoginToken = oldPatient.RemoteLoginToken,
                 SecurityStamp = oldPatient.SecurityStamp,
                 TwoFactorEnabled = oldPatient.TwoFactorEnabled,
-                UserName = oldPatient.UserName
+                UserName = oldPatient.UserName,
+                GlucoseEntries = oldPatient.GlucoseEntries,
+                ExerciseEntries = oldPatient.ExerciseEntries,
+                MealEntries = oldPatient.MealEntries,
+                HasSignedHIPAANotice = oldPatient.HasSignedHIPAANotice
             };
 
         } // Clone
@@ -95,7 +102,8 @@ namespace DMS.Models
                 + "\nGlucoseEntries: " + glucoseString
                 + "\nExerciseEntries: " + exerciseString
                 + "\nMealEntries: " + mealEntryString
-                + "\nDoctorUserName: " + Doctor.UserName;
+                + "\nDoctorUserName: " + Doctor.UserName
+                + "\nHasSignedHIPAANotice: " + HasSignedHIPAANotice;
 
         } // ToString
 
