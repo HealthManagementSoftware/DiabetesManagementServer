@@ -42,9 +42,13 @@ namespace DMS.Services
             _db.Doctors.Add( doctor );
             await _db.SaveChangesAsync();
 
-            var auditChange = new AuditChange();
-            auditChange.CreateAuditTrail( AuditActionType.CREATE, doctor.Id, new Doctor(), doctor );
-            await _auditRepo.CreateAsync( auditChange );
+            if( Config.AuditingOn )
+            {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, doctor.Id, new Doctor(), doctor );
+                await _auditRepo.CreateAsync( auditChange );
+
+            } // if
 
             return doctor;
 
@@ -56,9 +60,13 @@ namespace DMS.Services
             var oldDoctor = await ReadAsync( userName );
             if( oldDoctor != null )
             {
-                var auditChange = new AuditChange();
-                if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, doctor.Id, oldDoctor, doctor ) )
-                    await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, doctor.Id, oldDoctor, doctor ) )
+                        await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 oldDoctor.DegreeAbbreviation = doctor.DegreeAbbreviation;
 
@@ -78,9 +86,13 @@ namespace DMS.Services
             var doctor = await ReadAsync( usernameid );
             if( doctor != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.DELETE, doctor.Id, doctor, new Doctor() );
-                await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail( AuditActionType.DELETE, doctor.Id, doctor, new Doctor() );
+                    await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 _db.Doctors.Remove( doctor );
                 await _db.SaveChangesAsync();

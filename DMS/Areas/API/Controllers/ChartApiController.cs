@@ -95,8 +95,8 @@ namespace DMS.Areas.API.Controllers
 
             //_logger.LogDebug( "*******" + data.Count() + "*******" );
 
-            if( fromDate != null )
-                data = data.Where( d => d.Date >= fromDate );
+            data = data.Where( d => d.Date >= (fromDate != null ? fromDate : DateTime.Today.AddDays( -14 )) );
+
             if( toDate != null )
             {
                 var addADay = (DateTime) toDate;
@@ -126,8 +126,8 @@ namespace DMS.Areas.API.Controllers
 
             //_logger.LogDebug( "*******" + data.Count() + "*******" );
 
-            if( fromDate != null )
-                data = data.Where( d => d.Date >= fromDate );
+            data = data.Where( d => d.Date >= (fromDate != null ? fromDate : DateTime.Today.AddDays( -14 )) );
+
             if( toDate != null )
             {
                 var addADay = (DateTime) toDate;
@@ -157,8 +157,8 @@ namespace DMS.Areas.API.Controllers
 
             //_logger.LogDebug( "*******" + data.Count() + "*******" );
 
-            if( fromDate != null )
-                data = data.Where( d => d.Date >= fromDate );
+            data = data.Where( d => d.Date >= (fromDate != null ? fromDate : DateTime.Today.AddDays( -14 )) );
+
             if( toDate != null )
             {
                 var addADay = (DateTime) toDate;
@@ -189,8 +189,8 @@ namespace DMS.Areas.API.Controllers
 
             //_logger.LogDebug( "*******" + data.Count() + "*******" );
 
-            if( fromDate != null )
-                data = data.Where( d => d.Date >= fromDate );
+            data = data.Where( d => d.Date >= (fromDate != null ? fromDate : DateTime.Today.AddDays( -14 )) );
+
             if( toDate != null )
             {
                 var addADay = (DateTime) toDate;
@@ -202,6 +202,9 @@ namespace DMS.Areas.API.Controllers
             return data;
 
         } // GetStepEntries
+
+
+
 
         #endregion
 

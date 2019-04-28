@@ -54,9 +54,13 @@ namespace DMS.Services
 
             }// End if mealEntry not null statement.
 
-            var auditChange = new AuditChange();
-            auditChange.CreateAuditTrail( AuditActionType.CREATE, mealItem.Id.ToString(), new MealItem(), mealItem );
-            await _auditRepo.CreateAsync( auditChange );
+            if( Config.AuditingOn )
+            {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, mealItem.Id.ToString(), new MealItem(), mealItem );
+                await _auditRepo.CreateAsync( auditChange );
+
+            } // if
 
             return mealItem;
 
@@ -68,9 +72,13 @@ namespace DMS.Services
             var dbMealItem = await ReadAsync( id );
             if ( dbMealItem != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.UPDATE, mealItem.Id.ToString(), dbMealItem, mealItem );
-                await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail( AuditActionType.UPDATE, mealItem.Id.ToString(), dbMealItem, mealItem );
+                    await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 dbMealItem.Name = mealItem.Name;
                 dbMealItem.Carbs = mealItem.Carbs;
@@ -93,9 +101,13 @@ namespace DMS.Services
             var mealItem = await ReadAsync( id );
             if ( mealItem != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.DELETE, mealItem.Id.ToString(), mealItem, new MealItem() );
-                await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail( AuditActionType.DELETE, mealItem.Id.ToString(), mealItem, new MealItem() );
+                    await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 _db.MealItems.Remove( mealItem );
                 await _db.SaveChangesAsync();

@@ -47,9 +47,13 @@ namespace DMS.Services
             _db.ExerciseEntries.Add( exerciseentry );
             await _db.SaveChangesAsync();
 
-            var auditChange = new AuditChange();
-            auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseentry.Id.ToString(), new ExerciseEntry(), exerciseentry );
-            await _auditRepo.CreateAsync( auditChange );
+            if( Config.AuditingOn )
+            {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseentry.Id.ToString(), new ExerciseEntry(), exerciseentry );
+                await _auditRepo.CreateAsync( auditChange );
+
+            } // if
 
             return exerciseentry;
 
@@ -61,9 +65,13 @@ namespace DMS.Services
             var oldExerciseEntry = await ReadAsync( id );
             if( oldExerciseEntry != null )
             {
-                var auditChange = new AuditChange();
-                if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, exerciseEntry.Id.ToString(), oldExerciseEntry, exerciseEntry ) )
-                    await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, exerciseEntry.Id.ToString(), oldExerciseEntry, exerciseEntry ) )
+                        await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 oldExerciseEntry.UserName = exerciseEntry.UserName;
     			oldExerciseEntry.Patient = exerciseEntry.Patient;
@@ -85,9 +93,13 @@ namespace DMS.Services
             var exerciseentry = await ReadAsync( id );
             if( exerciseentry != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.DELETE, id.ToString(), exerciseentry, new ExerciseEntry() );
-                await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail( AuditActionType.DELETE, id.ToString(), exerciseentry, new ExerciseEntry() );
+                    await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 _db.ExerciseEntries.Remove( exerciseentry );
                 await _db.SaveChangesAsync();
@@ -101,9 +113,13 @@ namespace DMS.Services
             _db.ExerciseEntries.Add(exerciseEntry);
             _db.SaveChanges();
 
-            var auditChange = new AuditChange();
-            auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseEntry.Id.ToString(), new ExerciseEntry(), exerciseEntry );
-            _auditRepo.CreateAsync( auditChange );
+            if( Config.AuditingOn )
+            {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseEntry.Id.ToString(), new ExerciseEntry(), exerciseEntry );
+                _auditRepo.CreateAsync( auditChange );
+
+            } // if
 
             return exerciseEntry;
         }// ExerciseEntry Create

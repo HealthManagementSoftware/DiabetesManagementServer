@@ -50,9 +50,13 @@ namespace DMS.Services
             _db.Patients.Add( patient );
             await _db.SaveChangesAsync();
 
-            var auditChange = new AuditChange();
-            auditChange.CreateAuditTrail( AuditActionType.CREATE, patient.Id, new Patient(), patient );
-            await _auditRepo.CreateAsync( auditChange );
+            if( Config.AuditingOn )
+            {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, patient.Id, new Patient(), patient );
+                await _auditRepo.CreateAsync( auditChange );
+
+            } // if
 
             return patient;
 
@@ -64,9 +68,13 @@ namespace DMS.Services
             var dbPatient = await ReadAsync( username );
             if( dbPatient != null )
             {
-                var auditChange = new AuditChange();
-                if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, dbPatient, patient ) )
-                    await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, dbPatient, patient ) )
+                        await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 dbPatient.FirstName = patient.FirstName;
                 dbPatient.LastName = patient.LastName;
@@ -112,9 +120,13 @@ namespace DMS.Services
             var patient = await ReadAsync( username );
             if( patient != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.DELETE, patient.Id, patient, new Patient() );
-                await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail( AuditActionType.DELETE, patient.Id, patient, new Patient() );
+                    await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 _db.Patients.Remove( patient );
                 await _db.SaveChangesAsync();

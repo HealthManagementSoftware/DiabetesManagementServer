@@ -45,9 +45,13 @@ namespace DMS.Services
             _db.GlucoseEntries.Add( glucoseEntry );
             await _db.SaveChangesAsync();
 
-            var auditChange = new AuditChange();
-            auditChange.CreateAuditTrail( AuditActionType.CREATE, glucoseEntry.Id.ToString(), new GlucoseEntry(), glucoseEntry );
-            await _auditRepo.CreateAsync( auditChange );
+            if( Config.AuditingOn )
+            {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, glucoseEntry.Id.ToString(), new GlucoseEntry(), glucoseEntry );
+                await _auditRepo.CreateAsync( auditChange );
+
+            } // if
 
             return glucoseEntry;
 
@@ -59,9 +63,13 @@ namespace DMS.Services
             var dbGlucoseEntry = await ReadAsync( id );
             if( dbGlucoseEntry != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.UPDATE, dbGlucoseEntry.Id.ToString(), dbGlucoseEntry, glucoseEntry );
-                await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail( AuditActionType.UPDATE, dbGlucoseEntry.Id.ToString(), dbGlucoseEntry, glucoseEntry );
+                    await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 dbGlucoseEntry.UserName = glucoseEntry.UserName;
                 dbGlucoseEntry.Patient = glucoseEntry.Patient;
@@ -84,9 +92,13 @@ namespace DMS.Services
             var glucoseEntry = await ReadAsync( id );
             if( glucoseEntry != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.UPDATE, id.ToString(), glucoseEntry, new GlucoseEntry() );
-                await _auditRepo.CreateAsync( auditChange );
+                if( Config.AuditingOn )
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail( AuditActionType.UPDATE, id.ToString(), glucoseEntry, new GlucoseEntry() );
+                    await _auditRepo.CreateAsync( auditChange );
+
+                } // if
 
                 _db.GlucoseEntries.Remove( glucoseEntry );
                 await _db.SaveChangesAsync();

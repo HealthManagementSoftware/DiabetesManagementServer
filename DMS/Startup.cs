@@ -62,51 +62,54 @@ namespace DMS
                 CreateCosmosCollection( client, configSection[ DbInfo.KEY_DB_NAME ], DbInfo.COLLECTION_NAME ).Wait();
                 SeedRoles().Wait();
             }
-            catch ( DocumentClientException de )
+            catch( DocumentClientException de )
             {
                 Exception baseException = de.GetBaseException();
                 Console.WriteLine( "{0} error occurred: {1}, Message: {2}", de.StatusCode, de.Message, baseException.Message );
             }
-            catch ( Exception e )
+            catch( Exception e )
             {
                 Exception baseException = e.GetBaseException();
                 Console.WriteLine( "Error: {0}, Message: {1}", e.Message, baseException.Message );
             }
 
 
-            // Create the connection to the Audit database:
-
-            IConfigurationSection auditConfigSection = Configuration.GetSection(DbInfo.KEY_AUDIT_DB_SECTION);
-
-            services.AddDbContextPool<AuditDbContext>( options =>
-              options.UseCosmos(
-                  auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ],
-                  auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ],      //Saved in Azure Key Vault
-                  auditConfigSection[ DbInfo.KEY_DB_NAME ]
-                  ) );
-
-            try
+            // Create the connection to the Audit database (if auditing enabled):
+            if( Config.AuditingOn )
             {
-                auditClient = new DocumentClient(
-                    new Uri( auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ),
-                    auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ]
-                    );
-                CreateCosmosCollection(
-                    auditClient,
-                    auditConfigSection[ DbInfo.KEY_DB_NAME ],
-                    DbInfo.AUDIT_COLLECTION_NAME
-                    ).Wait();
-            }
-            catch ( DocumentClientException de )
-            {
-                Exception baseException = de.GetBaseException();
-                Console.WriteLine( "{0} error occurred: {1}, Message: {2}", de.StatusCode, de.Message, baseException.Message );
-            }
-            catch ( Exception e )
-            {
-                Exception baseException = e.GetBaseException();
-                Console.WriteLine( "Error: {0}, Message: {1}", e.Message, baseException.Message );
-            }
+                IConfigurationSection auditConfigSection = Configuration.GetSection(DbInfo.KEY_AUDIT_DB_SECTION);
+
+                services.AddDbContextPool<AuditDbContext>( options =>
+                  options.UseCosmos(
+                      auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ],
+                      auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ],      //Saved in Azure Key Vault
+                      auditConfigSection[ DbInfo.KEY_DB_NAME ]
+                      ) );
+
+                try
+                {
+                    auditClient = new DocumentClient(
+                        new Uri( auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ),
+                        auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ]
+                        );
+                    CreateCosmosCollection(
+                        auditClient,
+                        auditConfigSection[ DbInfo.KEY_DB_NAME ],
+                        DbInfo.AUDIT_COLLECTION_NAME
+                        ).Wait();
+                }
+                catch( DocumentClientException de )
+                {
+                    Exception baseException = de.GetBaseException();
+                    Console.WriteLine( "{0} error occurred: {1}, Message: {2}", de.StatusCode, de.Message, baseException.Message );
+                }
+                catch( Exception e )
+                {
+                    Exception baseException = e.GetBaseException();
+                    Console.WriteLine( "Error: {0}, Message: {1}", e.Message, baseException.Message );
+                }
+
+            } // if Auditing On
 
 
             // Add application services.
@@ -120,12 +123,10 @@ namespace DMS
             services.AddScoped<IMealItemRepository, DbMealItemRepository>();
             services.AddScoped<IPatientRepository, DbPatientRepository>();
             services.AddScoped<IDoctorRepository, DbDoctorRepository>();
-            services.AddScoped<IAuditRepository, DbAuditRepository>();
-
-            //services.AddIdentityCore<RoleUser>(options => { });
-            //services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
-            //services.AddAWSService<IAmazonDynamoDB>();
-            //services.AddAWSService<IAmazonS3>();
+            if( Config.AuditingOn )
+                services.AddScoped<IAuditRepository, DbAuditRepository>();
+            else
+                services.AddScoped<IAuditRepository, DummyAuditRepository>();
 
             services.AddMvc()
             .AddJsonOptions( options =>
@@ -144,10 +145,10 @@ namespace DMS
         } // ConfigureServices
 
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// This method gets called by the runtime. Use this to configure the HTTP request pipeline.
         public void Configure( IApplicationBuilder app, IHostingEnvironment env )
         {
-            if ( env.IsDevelopment() )
+            if( env.IsDevelopment() )
             {
                 //app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
@@ -177,6 +178,13 @@ namespace DMS
         } // Configure
 
 
+        /// <summary>
+        /// Creates CosmosDB collections as needed by the Application.
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="dbName"></param>
+        /// <param name="collectionName"></param>
+        /// <returns></returns>
         private async Task CreateCosmosCollection( DocumentClient client, string dbName, string collectionName )
         {
             await client.CreateDatabaseIfNotExistsAsync( new Database { Id = dbName } );     // Create DB
@@ -191,7 +199,10 @@ namespace DMS
         } // StartCosmosConnection
 
 
-
+        /// <summary>
+        /// Creates all of the needed roles in the system on startup of the Application.
+        /// </summary>
+        /// <returns></returns>
         private async Task SeedRoles()
         {
             //var testUser = new ApplicationUser { FirstName = "Bob", LastName = "TestUser" };      // Test data
@@ -215,6 +226,16 @@ namespace DMS
             };
             await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, patientRole );
 
+            var developerRole = new ApplicationRole
+            {
+                //Id = new Guid().ToString(),
+                Name = Roles.DEVELOPER,
+                NormalizedName = "DEV",
+                CreatedDate = DateTime.Now,
+                Discriminator = nameof( ApplicationRole )
+            };
+            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, developerRole );
+
         } // SeedRoles
 
 
@@ -226,10 +247,10 @@ namespace DMS
                 UriFactory.CreateDocumentCollectionUri( databaseName, collectionName ), queryOptions )
                 .Where( n => n.Name == role.Name );
 
-            if ( roleQuery.ToList().Count < 1 )
+            if( roleQuery.ToList().Count < 1 )
                 await client.CreateDocumentAsync(
                         UriFactory.CreateDocumentCollectionUri( databaseName, collectionName ), role
-                        );
+                    );
 
         } // CreateUserDocumentIfNotExists
 
