@@ -7,7 +7,7 @@ namespace DMS
 {
     internal class Config
     {
-        public const bool AuditingOn = true;
+        public const bool AuditingOn = false;
 
     } // class
 
