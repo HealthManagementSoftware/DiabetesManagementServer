@@ -9,7 +9,7 @@ namespace DMS.Services
 {
     public class DummyAuditRepository : IAuditRepository
     {
-        public async Task<AuditChange> ReadAsync( string auditId )
+        public Task<AuditChange> ReadAsync( string auditId )
         {
             return null;
         }
@@ -21,9 +21,9 @@ namespace DMS.Services
         }
 
 
-        public async Task<AuditChange> CreateAsync( AuditChange auditChange )
+        public Task<AuditChange> CreateAsync( AuditChange auditChange )
         {
-            return auditChange;
+            return null;
 
         }
 

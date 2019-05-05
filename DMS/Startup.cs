@@ -128,8 +128,8 @@ namespace DMS
             else
                 services.AddScoped<IAuditRepository, DummyAuditRepository>();
 
-            services.AddMvc()
-            .AddJsonOptions( options =>
+            services.AddMvc( option => option.EnableEndpointRouting = false )
+            .AddNewtonsoftJson( options =>
             {
                 options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
@@ -146,18 +146,18 @@ namespace DMS
 
 
         /// This method gets called by the runtime. Use this to configure the HTTP request pipeline.
-        public void Configure( IApplicationBuilder app, IHostingEnvironment env )
+        public void Configure( IApplicationBuilder app, IWebHostEnvironment env )
         {
-            if( env.IsDevelopment() )
-            {
+            //if( env.IsDevelopment() )
+            //{
                 //app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
                 //app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler( "/Home/Error" );
-            }
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler( "/Home/Error" );
+            //}
 
             app.UseStaticFiles();
 
