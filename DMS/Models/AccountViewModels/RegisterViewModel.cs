@@ -64,7 +64,7 @@ namespace DMS.Models.AccountViewModels
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 //SecurityStamp = new Guid().ToString(),
-                HasSignedHIPAANotice = false
+                //HasSignedHIPAANotice = false
             };
 
         } // GetNewPatient

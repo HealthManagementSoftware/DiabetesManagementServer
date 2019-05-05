@@ -7,7 +7,7 @@ namespace DMS
 {
     public class DbInfo
     {
-        public const string KEY_PRIMARY_DB_SECTION = "CosmosTestSettings";
+        public const string KEY_PRIMARY_DB_SECTION = "CosmosSettings";
 
         public const string KEY_SERVICE_ENDPOINT = "ServiceEndpoint";
         public const string KEY_AUTH_KEY = "AuthKey";
