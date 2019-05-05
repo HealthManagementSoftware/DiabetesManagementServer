@@ -16,13 +16,10 @@ namespace DMS.Services
     public class DbExerciseEntryRepository : IExerciseEntryRepository
     {
         private readonly ApplicationDbContext _db;
-        private IAuditRepository _auditRepo;
 
-        public DbExerciseEntryRepository( ApplicationDbContext db,
-                                    IAuditRepository auditRepo )
+        public DbExerciseEntryRepository( ApplicationDbContext db )
         {
             _db = db;
-            _auditRepo = auditRepo;
 
         } // Injection Constructor
 
@@ -47,13 +44,6 @@ namespace DMS.Services
             _db.ExerciseEntries.Add( exerciseentry );
             await _db.SaveChangesAsync();
 
-            if( Config.AuditingOn )
-            {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseentry.Id.ToString(), new ExerciseEntry(), exerciseentry );
-                await _auditRepo.CreateAsync( auditChange );
-
-            } // if
 
             return exerciseentry;
 
@@ -65,13 +55,6 @@ namespace DMS.Services
             var oldExerciseEntry = await ReadAsync( id );
             if( oldExerciseEntry != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, exerciseEntry.Id.ToString(), oldExerciseEntry, exerciseEntry ) )
-                        await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 oldExerciseEntry.UserName = exerciseEntry.UserName;
     			oldExerciseEntry.Patient = exerciseEntry.Patient;
@@ -93,13 +76,6 @@ namespace DMS.Services
             var exerciseentry = await ReadAsync( id );
             if( exerciseentry != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail( AuditActionType.DELETE, id.ToString(), exerciseentry, new ExerciseEntry() );
-                    await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 _db.ExerciseEntries.Remove( exerciseentry );
                 await _db.SaveChangesAsync();
@@ -113,13 +89,6 @@ namespace DMS.Services
             _db.ExerciseEntries.Add(exerciseEntry);
             _db.SaveChanges();
 
-            if( Config.AuditingOn )
-            {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.CREATE, exerciseEntry.Id.ToString(), new ExerciseEntry(), exerciseEntry );
-                _auditRepo.CreateAsync( auditChange );
-
-            } // if
 
             return exerciseEntry;
         }// ExerciseEntry Create

@@ -11,16 +11,13 @@ namespace DMS.Services
     public class DatabaseSeeder
     {
         private ApplicationDbContext _context;
-        public IAuditRepository _auditRepository { get; set; }
         private RoleManager<ApplicationRole> _roleManager;
 
         public DatabaseSeeder(
            ApplicationDbContext context,
-           IAuditRepository auditRepository,
            RoleManager<ApplicationRole> roleManager )
         {
             _context = context;
-            _auditRepository = auditRepository;
             _roleManager = roleManager;
         }
 
@@ -28,7 +25,6 @@ namespace DMS.Services
         public void SeedRoles()
         {
             _context.Database.EnsureCreated();
-            AuditChange change;
             ApplicationRole role;
 
             if ( !_context.Roles.Any( r => r.Name == Roles.DOCTOR ) )
@@ -41,9 +37,6 @@ namespace DMS.Services
                     CreatedDate = DateTime.Now
                 };
                 _roleManager.CreateAsync( role );
-                change = new AuditChange();
-                change.CreateAuditTrail( AuditActionType.CREATE, role.Id, new ApplicationRole(), role );
-                _auditRepository.CreateAsync( change );
             }
 
             if ( !_context.Roles.Any( r => r.Name == Roles.PATIENT ) )
@@ -56,9 +49,6 @@ namespace DMS.Services
                     CreatedDate = DateTime.Now
                 };
                 _roleManager.CreateAsync( role );
-                change = new AuditChange();
-                change.CreateAuditTrail( AuditActionType.CREATE, role.Id, new ApplicationRole(), role );
-                _auditRepository.CreateAsync( change );
             }
 
         } // SeedRoles

@@ -251,6 +251,7 @@ namespace DMS.Controllers
                     case Roles.DOCTOR:
                         Doctor doctor = registerVM.GetNewDoctor();
                         result = await _userManager.CreateAsync(doctor, registerVM.Password);
+                        doctor = await _doctorRepository.ReadAsync(doctor.Email);
                         await _userManager.AddToRoleAsync(doctor, Roles.DOCTOR.ToUpper());
                         //await _users.AssignRole(doctor.UserName, Roles.DOCTOR.ToUpper());
                         await SetupUser(doctor, registerVM);

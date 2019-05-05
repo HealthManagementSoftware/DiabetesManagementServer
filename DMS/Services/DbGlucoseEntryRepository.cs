@@ -13,13 +13,10 @@ namespace DMS.Services
     public class DbGlucoseEntriesRepository : IGlucoseEntryRepository
     {
         private readonly ApplicationDbContext _db;
-        private IAuditRepository _auditRepo;
 
-        public DbGlucoseEntriesRepository( ApplicationDbContext db,
-                                    IAuditRepository auditRepo )
+        public DbGlucoseEntriesRepository( ApplicationDbContext db )
         {
             _db = db;
-            _auditRepo = auditRepo;
 
         } // Injection Constructor
 
@@ -45,13 +42,6 @@ namespace DMS.Services
             _db.GlucoseEntries.Add( glucoseEntry );
             await _db.SaveChangesAsync();
 
-            if( Config.AuditingOn )
-            {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.CREATE, glucoseEntry.Id.ToString(), new GlucoseEntry(), glucoseEntry );
-                await _auditRepo.CreateAsync( auditChange );
-
-            } // if
 
             return glucoseEntry;
 
@@ -63,13 +53,6 @@ namespace DMS.Services
             var dbGlucoseEntry = await ReadAsync( id );
             if( dbGlucoseEntry != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail( AuditActionType.UPDATE, dbGlucoseEntry.Id.ToString(), dbGlucoseEntry, glucoseEntry );
-                    await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 dbGlucoseEntry.UserName = glucoseEntry.UserName;
                 dbGlucoseEntry.Patient = glucoseEntry.Patient;
@@ -92,13 +75,6 @@ namespace DMS.Services
             var glucoseEntry = await ReadAsync( id );
             if( glucoseEntry != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail( AuditActionType.UPDATE, id.ToString(), glucoseEntry, new GlucoseEntry() );
-                    await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 _db.GlucoseEntries.Remove( glucoseEntry );
                 await _db.SaveChangesAsync();

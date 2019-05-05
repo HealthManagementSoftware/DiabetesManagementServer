@@ -14,15 +14,12 @@ namespace DMS.Services
     {
         private readonly ApplicationDbContext _db;
         private IMealItemRepository _mealItemRepository;
-        private IAuditRepository _auditRepo;
 
         public DbMealEntryRepository( ApplicationDbContext db,
-                                    IMealItemRepository mealItemRepository,
-                                    IAuditRepository auditRepo )
+                                    IMealItemRepository mealItemRepository )
         {
             _db = db;
             _mealItemRepository = mealItemRepository;
-            _auditRepo = auditRepo;
 
         } // Injection Constructor
 
@@ -48,13 +45,6 @@ namespace DMS.Services
             _db.MealEntries.Add( mealentry );
             await _db.SaveChangesAsync();
 
-            if( Config.AuditingOn )
-            {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.CREATE, mealentry.Id.ToString(), new MealEntry(), mealentry );
-                await _auditRepo.CreateAsync( auditChange );
-
-            } // if
 
             return mealentry;
 
@@ -66,13 +56,6 @@ namespace DMS.Services
             var dbMealEntry = await ReadAsync( id );
             if( dbMealEntry != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail( AuditActionType.UPDATE, mealEntry.Id.ToString(), dbMealEntry, mealEntry );
-                    await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 dbMealEntry.UserName = mealEntry.UserName;
                 dbMealEntry.Patient = mealEntry.Patient;
@@ -104,13 +87,6 @@ namespace DMS.Services
             var mealEntry = await ReadAsync( id );
             if( mealEntry != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail( AuditActionType.DELETE, mealEntry.Id.ToString(), mealEntry, new MealEntry() );
-                    await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 _db.MealEntries.Remove( mealEntry );
                 await _db.SaveChangesAsync();

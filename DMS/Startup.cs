@@ -71,45 +71,6 @@ namespace DMS
                 Console.WriteLine( "Error: {0}, Message: {1}", e.Message, baseException.Message );
             }
 
-
-            // Create the connection to the Audit database (if auditing enabled):
-            if( Config.AuditingOn )
-            {
-                IConfigurationSection auditConfigSection = Configuration.GetSection(DbInfo.KEY_AUDIT_DB_SECTION);
-
-                services.AddDbContextPool<AuditDbContext>( options =>
-                  options.UseCosmos(
-                      auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ],
-                      auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ],      //Saved in Azure Key Vault
-                      auditConfigSection[ DbInfo.KEY_DB_NAME ]
-                      ) );
-
-                try
-                {
-                    DocumentClient auditClient = new DocumentClient(
-                        new Uri( auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ),
-                        auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ]
-                        );
-                    CreateCosmosCollection(
-                        auditClient,
-                        auditConfigSection[ DbInfo.KEY_DB_NAME ],
-                        DbInfo.AUDIT_COLLECTION_NAME
-                        ).Wait();
-                }
-                catch( DocumentClientException de )
-                {
-                    Exception baseException = de.GetBaseException();
-                    Console.WriteLine( "{0} error occurred: {1}, Message: {2}", de.StatusCode, de.Message, baseException.Message );
-                }
-                catch( Exception e )
-                {
-                    Exception baseException = e.GetBaseException();
-                    Console.WriteLine( "Error: {0}, Message: {1}", e.Message, baseException.Message );
-                }
-
-            } // if Auditing On
-
-
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
@@ -121,10 +82,6 @@ namespace DMS
             services.AddScoped<IMealItemRepository, DbMealItemRepository>();
             services.AddScoped<IPatientRepository, DbPatientRepository>();
             services.AddScoped<IDoctorRepository, DbDoctorRepository>();
-            if( Config.AuditingOn )
-                services.AddScoped<IAuditRepository, DbAuditRepository>();
-            else
-                services.AddScoped<IAuditRepository, DummyAuditRepository>();
 
             services.AddMvc()
             .AddJsonOptions( options =>
@@ -203,42 +160,24 @@ namespace DMS
         /// <returns></returns>
         private async Task SeedRoles( DocumentClient client )
         {
-            //var testUser = new ApplicationUser { FirstName = "Bob", LastName = "TestUser" };      // Test data
-            var doctorRole = new ApplicationRole
-            {
-                //Id = new Guid().ToString(),
-                Name = Roles.DOCTOR,
-                NormalizedName = "DOCTOR",
-                CreatedDate = DateTime.Now,
-                Discriminator = nameof( ApplicationRole )
-            };
-            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, doctorRole, client );
-
-            var patientRole = new ApplicationRole
-            {
-                //Id = new Guid().ToString(),
-                Name = Roles.PATIENT,
-                NormalizedName = "PATIENT",
-                CreatedDate = DateTime.Now,
-                Discriminator = nameof( ApplicationRole )
-            };
-            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, patientRole, client );
-
-            var developerRole = new ApplicationRole
-            {
-                //Id = new Guid().ToString(),
-                Name = Roles.DEVELOPER,
-                NormalizedName = "DEV",
-                CreatedDate = DateTime.Now,
-                Discriminator = nameof( ApplicationRole )
-            };
-            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, developerRole, client );
+            await CreateRoleIfNotExists(DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, client, Roles.DOCTOR);
+            await CreateRoleIfNotExists(DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, client, Roles.PATIENT);
+            await CreateRoleIfNotExists(DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, client, Roles.DEVELOPER);
 
         } // SeedRoles
 
 
-        private async Task CreateRoleIfNotExists( string databaseName, string collectionName, ApplicationRole role, DocumentClient client )
+        private async Task CreateRoleIfNotExists( string databaseName, string collectionName, DocumentClient client, string roleName )
         {
+            var role = new ApplicationRole
+            {
+                //Id = new Guid().ToString(),
+                Name = roleName,
+                NormalizedName = roleName.ToUpper(),
+                CreatedDate = DateTime.Now,
+                Discriminator = nameof(ApplicationRole)
+            };
+
             // Set some common query options
             var queryOptions = new FeedOptions { MaxItemCount = -1 };
             IQueryable<ApplicationRole> roleQuery = client.CreateDocumentQuery<ApplicationRole>(

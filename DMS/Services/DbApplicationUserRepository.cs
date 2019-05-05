@@ -13,17 +13,14 @@ namespace DMS.Services
     public class DbApplicationUserRepository : IApplicationUserRepository
     {
         private ApplicationDbContext _db;
-        private IAuditRepository _auditRepo;
 
 
         private UserManager<ApplicationUser> _userManager;
 
         public DbApplicationUserRepository( ApplicationDbContext db,
-                                            IAuditRepository auditRepo,
                                             UserManager<ApplicationUser> userManager )
         {
             _db = db;
-            _auditRepo = auditRepo;
             _userManager = userManager;
 
         } // constructor
@@ -87,12 +84,6 @@ namespace DMS.Services
             _db.Users.Add( applicationUser );
             await _db.SaveChangesAsync();
 
-            if (Config.AuditingOn)
-            {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail(AuditActionType.CREATE, applicationUser.Id, new ApplicationUser(), applicationUser);
-                await _auditRepo.CreateAsync(auditChange);
-            }
             return applicationUser;
 
         } // CreateAsync
@@ -103,13 +94,6 @@ namespace DMS.Services
             var oldUser = await ReadAsync( username );
             if ( oldUser != null )
             {
-
-                if (Config.AuditingOn)
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail(AuditActionType.UPDATE, applicationUser.Id, oldUser, applicationUser);
-                    await _auditRepo.CreateAsync(auditChange);
-                }
 
                 oldUser.UserName = applicationUser.UserName;
                 oldUser.Address1 = applicationUser.Address1;
@@ -137,12 +121,6 @@ namespace DMS.Services
             var user = await ReadAsync( username );
             if ( user != null )
             {
-                if (Config.AuditingOn)
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail(AuditActionType.DELETE, user.Id, user, new ApplicationUser());
-                    await _auditRepo.CreateAsync(auditChange);
-                }
 
                 _db.Users.Remove( user );
                 await _db.SaveChangesAsync();

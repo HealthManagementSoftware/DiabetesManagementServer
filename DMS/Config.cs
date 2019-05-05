@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DMS
 {
-    internal class Config
+    internal class Con
     {
         public const bool AuditingOn = false;
 

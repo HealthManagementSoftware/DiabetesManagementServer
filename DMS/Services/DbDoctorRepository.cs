@@ -10,13 +10,10 @@ namespace DMS.Services
     public class DbDoctorRepository : IDoctorRepository
     {
         private readonly ApplicationDbContext _db;
-        private IAuditRepository _auditRepo;
 
-        public DbDoctorRepository( ApplicationDbContext db,
-                                    IAuditRepository auditRepo )
+        public DbDoctorRepository( ApplicationDbContext db )
         {
             _db = db;
-            _auditRepo = auditRepo;
 
         } // Injection Constructor
 
@@ -42,13 +39,6 @@ namespace DMS.Services
             _db.Doctors.Add( doctor );
             await _db.SaveChangesAsync();
 
-            if( Config.AuditingOn )
-            {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.CREATE, doctor.Id, new Doctor(), doctor );
-                await _auditRepo.CreateAsync( auditChange );
-
-            } // if
 
             return doctor;
 
@@ -60,13 +50,6 @@ namespace DMS.Services
             var oldDoctor = await ReadAsync( userName );
             if( oldDoctor != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, doctor.Id, oldDoctor, doctor ) )
-                        await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 oldDoctor.DegreeAbbreviation = doctor.DegreeAbbreviation;
 
@@ -86,13 +69,6 @@ namespace DMS.Services
             var doctor = await ReadAsync( usernameid );
             if( doctor != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail( AuditActionType.DELETE, doctor.Id, doctor, new Doctor() );
-                    await _auditRepo.CreateAsync( auditChange );
-
-                } // if
 
                 _db.Doctors.Remove( doctor );
                 await _db.SaveChangesAsync();
