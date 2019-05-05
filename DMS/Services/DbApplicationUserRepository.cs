@@ -69,7 +69,6 @@ namespace DMS.Services
         public async Task<ApplicationUser> ReadAsync( string username )
         {
             return await ReadAll()
-                .Include( r => r.Roles )
                 .SingleOrDefaultAsync( o => o.UserName == username );
 
         } // ReadAsync
@@ -87,9 +86,13 @@ namespace DMS.Services
         {
             _db.Users.Add( applicationUser );
             await _db.SaveChangesAsync();
-            var auditChange = new AuditChange();
-            auditChange.CreateAuditTrail( AuditActionType.CREATE, applicationUser.Id, new ApplicationUser(), applicationUser );
-            await _auditRepo.CreateAsync( auditChange );
+
+            if (Config.AuditingOn)
+            {
+                var auditChange = new AuditChange();
+                auditChange.CreateAuditTrail(AuditActionType.CREATE, applicationUser.Id, new ApplicationUser(), applicationUser);
+                await _auditRepo.CreateAsync(auditChange);
+            }
             return applicationUser;
 
         } // CreateAsync
@@ -100,6 +103,14 @@ namespace DMS.Services
             var oldUser = await ReadAsync( username );
             if ( oldUser != null )
             {
+
+                if (Config.AuditingOn)
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail(AuditActionType.UPDATE, applicationUser.Id, oldUser, applicationUser);
+                    await _auditRepo.CreateAsync(auditChange);
+                }
+
                 oldUser.UserName = applicationUser.UserName;
                 oldUser.Address1 = applicationUser.Address1;
                 oldUser.Address2 = applicationUser.Address2;
@@ -114,10 +125,6 @@ namespace DMS.Services
                 _db.Entry( oldUser ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
 
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.UPDATE, applicationUser.Id, oldUser, applicationUser );
-                await _auditRepo.CreateAsync( auditChange );
-
                 return;
 
             } // if
@@ -130,9 +137,12 @@ namespace DMS.Services
             var user = await ReadAsync( username );
             if ( user != null )
             {
-                var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail( AuditActionType.DELETE, user.Id, user, new ApplicationUser() );
-                await _auditRepo.CreateAsync( auditChange );
+                if (Config.AuditingOn)
+                {
+                    var auditChange = new AuditChange();
+                    auditChange.CreateAuditTrail(AuditActionType.DELETE, user.Id, user, new ApplicationUser());
+                    await _auditRepo.CreateAsync(auditChange);
+                }
 
                 _db.Users.Remove( user );
                 await _db.SaveChangesAsync();
