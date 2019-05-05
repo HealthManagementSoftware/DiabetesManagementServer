@@ -19,6 +19,8 @@ namespace DMS.Data
         public DbSet<MealItem> MealItems { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
+        public DbSet<HIPAAPrivacyNotice> HIPAAPrivacyNotice { get; internal set; }
+
         //public DbSet<ApplicationUserRole> ApplicationUserRoles { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

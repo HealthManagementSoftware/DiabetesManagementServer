@@ -1,6 +1,7 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 40px;
+    min-height: 100%
 }
 
 /* Wrapping element */
@@ -8,7 +9,6 @@
 .body-content {
     padding-left: 15px;
     padding-right: 15px;
-    min-height:100%
 }
 
 /* Carousel */
@@ -37,11 +37,6 @@
 
 .bold {
     font-weight: bold;
-}
-
-footer {
-    position: absolute;
-    bottom: 20px;
 }
 
 input, select, option {
