@@ -31,14 +31,14 @@ namespace DMS.Services
 
         public IQueryable<HIPAAPrivacyNotice> ReadAll()
         {
-            return _db.HIPAAPrivacyNotice;
+            return _db.HIPAAPrivacyNotices;
 
         } // ReadAll
 
 
         public async Task<HIPAAPrivacyNotice> CreateAsync( HIPAAPrivacyNotice hipaaprivacynotice )
         {
-            _db.HIPAAPrivacyNotice.Add( hipaaprivacynotice );
+            _db.HIPAAPrivacyNotices.Add( hipaaprivacynotice );
             await _db.SaveChangesAsync();
             return hipaaprivacynotice;
 
@@ -68,7 +68,7 @@ namespace DMS.Services
             var hipaaprivacynotice = await ReadAsync( id );
             if( hipaaprivacynotice != null )
             {
-                _db.HIPAAPrivacyNotice.Remove( hipaaprivacynotice );
+                _db.HIPAAPrivacyNotices.Remove( hipaaprivacynotice );
                 await _db.SaveChangesAsync();
             }
             return;
