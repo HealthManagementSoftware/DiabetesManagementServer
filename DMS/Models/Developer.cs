@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DMS
+namespace DMS.Models
 {
-    internal class Config
+    public class Developer : ApplicationUser
     {
-        public const bool AuditingOn = false;
+
 
     } // class
 

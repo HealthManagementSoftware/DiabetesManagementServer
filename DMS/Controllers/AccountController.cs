@@ -205,14 +205,18 @@ namespace DMS.Controllers
                 ModelState.AddModelError( string.Empty, "Invalid recovery code entered." );
                 return View();
             }
-        }
+
+        } // LoginWithRecoveryCode
+
 
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Lockout()
         {
             return View();
-        }
+
+        } // Lockout
+
 
         [HttpGet]
         [AllowAnonymous]
@@ -227,7 +231,9 @@ namespace DMS.Controllers
             };
             ViewData[ "ReturnUrl" ] = returnUrl;
             return View( vm );
-        }
+
+        } // Register
+
 
         [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
         public async Task<IActionResult> Register( RegisterViewModel registerVM, string returnUrl = null )
@@ -238,54 +244,67 @@ namespace DMS.Controllers
                 _logger.LogInformation( "********Role: " + registerVM.Role + "*************" );
 
                 IdentityResult result = null;
-                Doctor doctor = null;
-                Patient patient = null;
+
+                //var user = registerVM.Role == Roles.DOCTOR ? (ApplicationUser) doctor : (ApplicationUser) patient;
+                switch (registerVM.Role)
+                {
+                    case Roles.DOCTOR:
+                        Doctor doctor = registerVM.GetNewDoctor();
+                        result = await _userManager.CreateAsync(doctor, registerVM.Password);
+                        await _userManager.AddToRoleAsync(doctor, Roles.DOCTOR.ToUpper());
+                        //await _users.AssignRole(doctor.UserName, Roles.DOCTOR.ToUpper());
+                        await SetupUser(doctor, registerVM);
+                        break;
+
+                    case Roles.PATIENT:
+                        Patient patient = await registerVM.GetNewPatient(_doctorRepository);
+                        result = await _userManager.CreateAsync(patient, registerVM.Password);
+                        await _userManager.AddToRoleAsync(patient, Roles.PATIENT);
+                        await SetupUser(patient, registerVM);
+                        break;
+
+                    case Roles.DEVELOPER:
+                        Developer dev = new Developer();
+                        result = await _userManager.CreateAsync(dev, registerVM.Password);
+                        await _userManager.AddToRoleAsync(dev, Roles.DEVELOPER);
+                        await SetupUser(dev, registerVM);
+                        break;
+
+                    default:
+                        break;
+                }
+
                 //var user = new ApplicationUser { UserName = registerVM.Email, Email = registerVM.Email };
-                if( registerVM.Role == Roles.DOCTOR )
+
+                if ( result != null && result.Succeeded )
                 {
-                    doctor = registerVM.GetNewDoctor();
-                    //    new Doctor {
-                    //    UserName = registerVM.Email,
-                    //    Email = registerVM.Email,
-                    //    DegreeAbbreviation = registerVM.DegreeAbbreviation
-                    //};
-                    result = await _userManager.CreateAsync(doctor, registerVM.Password);
-                }
-                else if( registerVM.Role == Roles.PATIENT )
-                {
-                    patient = await registerVM.GetNewPatient( _doctorRepository );
-                    //    new Patient {
-                    //    UserName = registerVM.Email,
-                    //    Email = registerVM.Email,
-                    //    Doctor = await _doctorRepository.ReadAsync( registerVM.DoctorUserName ),
-                    //    DoctorUserName = registerVM.DoctorUserName
-                    //};
-                    result = await _userManager.CreateAsync( patient, registerVM.Password );
-                }
+                    return RedirectToLocal(returnUrl);
 
-                if( result != null && result.Succeeded )
-                {
-                    var user = registerVM.Role == Roles.DOCTOR ? (ApplicationUser) doctor : (ApplicationUser) patient;
-                    await _userManager.AddToRoleAsync( user, registerVM.Role.ToString().ToUpper() );
-                    _logger.LogInformation( "User created a new account with password." );
-
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailConfirmationAsync( registerVM.Email, callbackUrl );
-
-                    await _signInManager.SignInAsync( user, isPersistent: false );
-                    _logger.LogInformation( "User created a new account with password." );
-
-                    return RedirectToLocal( returnUrl );
-                }
+                } // if
 
                 AddErrors( result );
-                //if()
-            }
+
+            } // if
 
             // If we got this far, something failed, redisplay form
             return View( registerVM );
-        }
+
+        } // Register
+
+
+        private async Task SetupUser( ApplicationUser user, RegisterViewModel registerVM )
+        {
+            _logger.LogInformation("User created a new account with password.");
+
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+            await _emailSender.SendEmailConfirmationAsync(registerVM.Email, callbackUrl);
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            _logger.LogInformation("User created a new account with password.");
+
+        } // CreateUser
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

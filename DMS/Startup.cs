@@ -20,9 +20,6 @@ namespace DMS
 {
     public class Startup
     {
-        private DocumentClient client;
-        private DocumentClient auditClient;
-
         public IConfiguration Configuration { get; }
 
 
@@ -58,9 +55,10 @@ namespace DMS
             // https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-dotnetcore-get-started
             try
             {
-                client = new DocumentClient( new Uri( configSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ), configSection[ DbInfo.KEY_AUTH_KEY ] );
+                DocumentClient client = new DocumentClient( new Uri( configSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ), 
+                    configSection[ DbInfo.KEY_AUTH_KEY ] );
                 CreateCosmosCollection( client, configSection[ DbInfo.KEY_DB_NAME ], DbInfo.COLLECTION_NAME ).Wait();
-                SeedRoles().Wait();
+                SeedRoles( client ).Wait();
             }
             catch( DocumentClientException de )
             {
@@ -88,7 +86,7 @@ namespace DMS
 
                 try
                 {
-                    auditClient = new DocumentClient(
+                    DocumentClient auditClient = new DocumentClient(
                         new Uri( auditConfigSection[ DbInfo.KEY_SERVICE_ENDPOINT ] ),
                         auditConfigSection[ DbInfo.KEY_AUDIT_AUTH_KEY ]
                         );
@@ -203,7 +201,7 @@ namespace DMS
         /// Creates all of the needed roles in the system on startup of the Application.
         /// </summary>
         /// <returns></returns>
-        private async Task SeedRoles()
+        private async Task SeedRoles( DocumentClient client )
         {
             //var testUser = new ApplicationUser { FirstName = "Bob", LastName = "TestUser" };      // Test data
             var doctorRole = new ApplicationRole
@@ -214,7 +212,7 @@ namespace DMS
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
-            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, doctorRole );
+            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, doctorRole, client );
 
             var patientRole = new ApplicationRole
             {
@@ -224,7 +222,7 @@ namespace DMS
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
-            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, patientRole );
+            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, patientRole, client );
 
             var developerRole = new ApplicationRole
             {
@@ -234,12 +232,12 @@ namespace DMS
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
-            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, developerRole );
+            await CreateRoleIfNotExists( DbInfo.PRIMARY_DB_NAME, DbInfo.COLLECTION_NAME, developerRole, client );
 
         } // SeedRoles
 
 
-        private async Task CreateRoleIfNotExists( string databaseName, string collectionName, ApplicationRole role )
+        private async Task CreateRoleIfNotExists( string databaseName, string collectionName, ApplicationRole role, DocumentClient client )
         {
             // Set some common query options
             var queryOptions = new FeedOptions { MaxItemCount = -1 };

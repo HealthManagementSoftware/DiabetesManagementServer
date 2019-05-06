@@ -53,6 +53,7 @@ namespace DMS.Models.AccountViewModels
             var doctor = await doctorRepository.ReadAsync( DoctorUserName );
             return new Patient
             {
+                //Id = new Guid().ToString(),
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
@@ -61,7 +62,9 @@ namespace DMS.Models.AccountViewModels
                 //DrUserName = DoctorUserName,
                 UserName = Email,
                 CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                UpdatedAt = DateTime.Now,
+                //SecurityStamp = new Guid().ToString(),
+                //HasSignedHIPAANotice = false
             };
 
         } // GetNewPatient
@@ -70,13 +73,15 @@ namespace DMS.Models.AccountViewModels
         {
             return new Doctor
             {
+                //Id = new Guid().ToString(),
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
                 UserName = Email,
                 DegreeAbbreviation = DegreeAbbreviation,
                 CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                UpdatedAt = DateTime.Now//,
+                //SecurityStamp = new Guid().ToString()
             };
 
         } // GetNewPatient
