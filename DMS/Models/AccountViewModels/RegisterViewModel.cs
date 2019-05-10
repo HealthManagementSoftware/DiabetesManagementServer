@@ -1,4 +1,5 @@
 ﻿using DMS.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
@@ -50,10 +51,11 @@ namespace DMS.Models.AccountViewModels
 
         public async Task<Patient> GetNewPatient( IDoctorRepository doctorRepository)
         {
+            // Changed the way the user is registered. Using the UserManager to add patients/doctors
+            // caused errors with CosmosDB, so have to create everything from scratch.
             var doctor = await doctorRepository.ReadAsync( DoctorUserName );
-            return new Patient
+            var pat = new Patient
             {
-                //Id = new Guid().ToString(),
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
@@ -63,28 +65,57 @@ namespace DMS.Models.AccountViewModels
                 UserName = Email,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                //SecurityStamp = new Guid().ToString(),
+                SecurityStamp = new Guid().ToString()
                 //HasSignedHIPAANotice = false
             };
+            var passHash = new PasswordHasher<ApplicationUser>();
+            var hash = passHash.HashPassword(pat, Password);
+            pat.PasswordHash = hash;
+            return pat;
 
         } // GetNewPatient
 
+
         public Doctor GetNewDoctor()
         {
-            return new Doctor
+            var doc = new Doctor
             {
-                //Id = new Guid().ToString(),
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
                 UserName = Email,
                 DegreeAbbreviation = DegreeAbbreviation,
                 CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now//,
-                //SecurityStamp = new Guid().ToString()
+                UpdatedAt = DateTime.Now,
+                SecurityStamp = new Guid().ToString()
             };
+            var passHash = new PasswordHasher<ApplicationUser>();
+            var hash = passHash.HashPassword(doc, Password);
+            doc.PasswordHash = hash;
+            return doc;
 
-        } // GetNewPatient
+        } // GetNewDoctor
+
+
+        public Developer GetNewDeveloper()
+        {
+            var dev = new Developer
+            {
+                //Id = new Guid().ToString(),
+                FirstName = FirstName,
+                LastName = LastName,
+                Email = Email,
+                UserName = Email,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                SecurityStamp = new Guid().ToString()
+            };
+            var passHash = new PasswordHasher<ApplicationUser>();
+            var hash = passHash.HashPassword(dev, Password);
+            dev.PasswordHash = hash;
+            return dev;
+
+        } // GetNewDoctor
 
         public RegisterViewModel()
         {

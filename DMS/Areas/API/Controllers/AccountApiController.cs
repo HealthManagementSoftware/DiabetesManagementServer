@@ -121,9 +121,10 @@ namespace DMS.Areas.API.Controllers
             patient.Doctor = doctor;
             //patient.DoctorUserName = doctor.UserName;
 
-            var result = await _userManager.CreateAsync(patient, model.Password);
+            //var result = await _userManager.CreateAsync(patient, model.Password);
+            var newPat = await _patientRepository.CreateAsync(patient);
 
-            if ( result.Succeeded )
+            if (newPat != null )
             {
                 _logger.LogInformation( "User created a new account with password." );
 

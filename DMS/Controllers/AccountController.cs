@@ -243,14 +243,15 @@ namespace DMS.Controllers
             {
                 _logger.LogInformation( "********Role: " + registerVM.Role + "*************" );
 
-                IdentityResult result = null;
+                //IdentityResult result = null;
 
                 //var user = registerVM.Role == Roles.DOCTOR ? (ApplicationUser) doctor : (ApplicationUser) patient;
                 switch (registerVM.Role)
                 {
                     case Roles.DOCTOR:
                         Doctor doctor = registerVM.GetNewDoctor();
-                        result = await _userManager.CreateAsync(doctor, registerVM.Password);
+                        //result = await _userManager.CreateAsync(doctor, registerVM.Password);
+                        doctor = await _doctorRepository.CreateAsync(doctor);
                         await _userManager.AddToRoleAsync(doctor, Roles.DOCTOR.ToUpper());
                         //await _users.AssignRole(doctor.UserName, Roles.DOCTOR.ToUpper());
                         await SetupUser(doctor, registerVM);
@@ -258,14 +259,16 @@ namespace DMS.Controllers
 
                     case Roles.PATIENT:
                         Patient patient = await registerVM.GetNewPatient(_doctorRepository);
-                        result = await _userManager.CreateAsync(patient, registerVM.Password);
+                        //result = await _userManager.CreateAsync(patient, registerVM.Password);
+                        patient = await _patientRepository.CreateAsync(patient);
                         await _userManager.AddToRoleAsync(patient, Roles.PATIENT);
                         await SetupUser(patient, registerVM);
                         break;
 
+                    // TODO: Create Dev repo, use here:
                     case Roles.DEVELOPER:
                         Developer dev = new Developer();
-                        result = await _userManager.CreateAsync(dev, registerVM.Password);
+                        var result = await _userManager.CreateAsync(dev, registerVM.Password);
                         await _userManager.AddToRoleAsync(dev, Roles.DEVELOPER);
                         await SetupUser(dev, registerVM);
                         break;
@@ -276,13 +279,13 @@ namespace DMS.Controllers
 
                 //var user = new ApplicationUser { UserName = registerVM.Email, Email = registerVM.Email };
 
-                if ( result != null && result.Succeeded )
-                {
+                //if ( result != null && result.Succeeded )
+                //{
                     return RedirectToLocal(returnUrl);
 
-                } // if
+                //} // if
 
-                AddErrors( result );
+                //AddErrors( result );
 
             } // if
 
