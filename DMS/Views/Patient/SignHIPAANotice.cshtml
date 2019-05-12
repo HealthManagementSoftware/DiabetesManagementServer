@@ -1,0 +1,34 @@
+﻿@model SignHIPAANoticeViewModel
+@{
+    ViewData[ "Title" ] = "SignHIPAANotice";
+}
+
+<h1>HIPAA Notice</h1>
+
+<h2>Please confirm you have read your rights as presented below:</h2>
+
+<p>
+    @if ( Model.HIPAAPrivacyNotice != null )
+    {
+        <h4>@Model.HIPAAPrivacyNotice.Title</h4>
+        <span style="white-space: pre-line">@Model.HIPAAPrivacyNotice.NoticeText</span>
+
+    }
+</p>
+
+
+<form asp-action="SignHIPAANotice" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <input asp-for="HIPAAPrivacyNotice.Id" type="hidden" />
+    <input asp-for="HIPAAPrivacyNotice.NoticeText" type="hidden" />
+    <input asp-for="SignedAt" type="hidden" />
+    <input asp-for="UpdatedAt" type="hidden" />
+
+    <div class="form-group">
+        <input type="checkbox" name="IAgree" asp-for="IAgree" data-val-required="Please check the checkbox acknowledging your acceptance of the HIPAA privacy policy before continuing."
+               class="inline-block" value="true" />
+        <span>I agree to the HIPAA policy.</span>
+        <div><input type="submit" class="btn btn-primary" /></div>
+    </div>
+</form>

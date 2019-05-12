@@ -16,6 +16,13 @@ namespace DMS.Models
         public string Version { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public List<PatientSignedHIPAANotice> Signatures { get; set; }
+
+        public HIPAAPrivacyNotice()
+        {
+            Signatures = new List<PatientSignedHIPAANotice>();
+
+        } // constructor
 
     } // class
 

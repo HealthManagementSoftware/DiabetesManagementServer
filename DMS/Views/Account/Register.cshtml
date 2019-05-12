@@ -1,7 +1,4 @@
 ﻿@model RegisterViewModel
-@*@using DMS.Services.Interfaces*@
-@*@inject IApplicationUserRepository assignRole*@
-@*@inject UserManager<IdentityUser> UserManager*@
 @{
     ViewData[ "Title" ] = "Register";
 }
@@ -16,20 +13,28 @@
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Role" style="font-size: 18px;" class="control_label"></label><br />
-                @for( int i = 0; i < Model.AllRoles.Count(); i++ )
+                @Html.Label( Roles.DOCTOR )
+                <input asp-for="Role" type="radio" value="@Roles.DOCTOR" class="@Roles.DOCTOR" checked="checked" />
+                @Html.Label( Roles.PATIENT )
+                <input asp-for="Role" type="radio" value="@Roles.PATIENT" class="@Roles.PATIENT" />
+                @if ( Model.DevCreationAllowed )
                 {
-                    @Html.Label( Model.AllRoles[ i ].Name )
-                    if( i == 0 )
-                    {
-                        <input asp-for="Role" type="radio" value="@Model.AllRoles[i].Name" class="@Model.AllRoles[i].Name" checked="checked" />
-                    }
-                    else
-                    {
-                        <input asp-for="Role" type="radio" value="@Model.AllRoles[i].Name" class="@Model.AllRoles[i].Name" />
-                    }
-                    @*<input asp-for="@role.Name" type="hidden" />*@
-                    @:&nbsp;
+                    @Html.Label( Roles.DEVELOPER )
+                    <input asp-for="Role" type="radio" value="@Roles.DEVELOPER" class="@Roles.DEVELOPER" />
                 }
+                @*@for ( int i = 0; i < Model.AllRoles.Count(); i++ )
+                    {
+                        @Html.Label( Model.AllRoles[ i ].Name )
+                        if ( i == 0 )
+                        {
+                            <input asp-for="Role" type="radio" value="@Model.AllRoles[i].Name" class="@Model.AllRoles[i].Name" checked="checked" />
+                        }
+                        else
+                        {
+                            <input asp-for="Role" type="radio" value="@Model.AllRoles[i].Name" class="@Model.AllRoles[i].Name" />
+                        }
+                        @:&nbsp;
+                    }*@
 
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
@@ -49,7 +54,7 @@
                 <label asp-for="DoctorUserName"></label>
                 <select asp-for="DoctorUserName" class="form-control" id="DoctorUserName">
                     <option value="">-- Select a Doctor --</option>
-                    @foreach( Doctor dr in Model.AllDoctors )
+                    @foreach ( Doctor dr in Model.AllDoctors )
                     {
                         <option value="@dr.UserName">@dr.FirstName @dr.LastName, @dr.DegreeAbbreviation</option>
                     }

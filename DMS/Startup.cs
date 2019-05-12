@@ -113,6 +113,7 @@ namespace DMS
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
+
             // Adding scoped services to provide DB Repositories:
             services.AddScoped<IApplicationUserRepository, DbApplicationUserRepository>();
             services.AddScoped<IExerciseEntryRepository, DbExerciseEntryRepository>();
@@ -121,10 +122,14 @@ namespace DMS
             services.AddScoped<IMealItemRepository, DbMealItemRepository>();
             services.AddScoped<IPatientRepository, DbPatientRepository>();
             services.AddScoped<IDoctorRepository, DbDoctorRepository>();
-            if( Config.AuditingOn )
+            services.AddScoped<IDeveloperRepository, DbDeveloperRepository>();
+            if ( Config.AuditingOn )
                 services.AddScoped<IAuditRepository, DbAuditRepository>();
             else
                 services.AddScoped<IAuditRepository, DummyAuditRepository>();
+            services.AddScoped<IHIPAANoticeRepository, DbHIPAANoticeRepository>();
+            services.AddScoped<IPatientSignedHIPAANoticeRepository, DbPatientSignedHIPAANoticeRepository>();
+
 
             services.AddMvc()
             .AddJsonOptions( options =>
@@ -208,7 +213,7 @@ namespace DMS
             {
                 //Id = new Guid().ToString(),
                 Name = Roles.DOCTOR,
-                NormalizedName = "DOCTOR",
+                NormalizedName = Roles.DOCTOR.ToUpper(),
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
@@ -218,7 +223,7 @@ namespace DMS
             {
                 //Id = new Guid().ToString(),
                 Name = Roles.PATIENT,
-                NormalizedName = "PATIENT",
+                NormalizedName = Roles.PATIENT.ToUpper(),
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
@@ -228,7 +233,7 @@ namespace DMS
             {
                 //Id = new Guid().ToString(),
                 Name = Roles.DEVELOPER,
-                NormalizedName = "DEV",
+                NormalizedName = Roles.DEVELOPER.ToUpper(),
                 CreatedDate = DateTime.Now,
                 Discriminator = nameof( ApplicationRole )
             };
@@ -251,6 +256,22 @@ namespace DMS
                     );
 
         } // CreateUserDocumentIfNotExists
+
+
+        private async Task CreateDeveloperIfNotExists(string databaseName, string collectionName, Developer developer, DocumentClient client)
+        {
+            // Set some common query options
+            var queryOptions = new FeedOptions { MaxItemCount = -1 };
+            IQueryable<Developer> devQuery = client.CreateDocumentQuery<Developer>(
+                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+                .Where(n => n.UserName == developer.UserName);
+
+            if (devQuery.ToList().Count < 1)
+                await client.CreateDocumentAsync(
+                        UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), developer
+                    );
+
+        } // CreateUserIfNotExists
 
     } // class
 

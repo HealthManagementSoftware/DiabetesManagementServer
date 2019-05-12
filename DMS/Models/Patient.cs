@@ -14,6 +14,7 @@ namespace DMS.Models
         public List<GlucoseEntry> GlucoseEntries { get; set; }
         public List<ExerciseEntry> ExerciseEntries { get; set; }
         public List<MealEntry> MealEntries { get; set; }
+        public PatientSignedHIPAANotice PatientSignedHIPAANotice { get; set; }
 
 
         public Patient()
@@ -22,7 +23,7 @@ namespace DMS.Models
             GlucoseEntries = new List<GlucoseEntry>();
             ExerciseEntries = new List<ExerciseEntry>();
             MealEntries = new List<MealEntry>();
-            //HasSignedHIPAANotice = false;
+            PatientSignedHIPAANotice = new PatientSignedHIPAANotice();
 
         } // constructor
 
@@ -64,8 +65,8 @@ namespace DMS.Models
                 UserName = oldPatient.UserName,
                 GlucoseEntries = oldPatient.GlucoseEntries,
                 ExerciseEntries = oldPatient.ExerciseEntries,
-                MealEntries = oldPatient.MealEntries//,
-                //HasSignedHIPAANotice = oldPatient.HasSignedHIPAANotice
+                MealEntries = oldPatient.MealEntries,
+                PatientSignedHIPAANotice = oldPatient.PatientSignedHIPAANotice
             };
 
         } // Clone

@@ -23,12 +23,19 @@ namespace DMS.Services
 
         public async Task<Patient> ReadAsync( string username )
         {
-            return await ReadAll()
+            var patient = await _db.Patients
+                //.Select( p => new Patient { p.UserName, p.Doctor, p.SignedHIPAANotice, p.GlucoseEntries, p.ExerciseEntries, p.MealEntries } )
                 .Include( d => d.Doctor )
+                .Include( o => o.PatientSignedHIPAANotice )
                 .Include( g => g.GlucoseEntries )
                 .Include( e => e.ExerciseEntries )
                 .Include( m => m.MealEntries )
+                    .ThenInclude( mi => mi.MealItems )
                 .SingleOrDefaultAsync( o => o.UserName == username );
+            //patient.PatientSignedHIPAANotice = await _db.PatientSignedHIPAANotices
+            //    .FirstOrDefaultAsync( u => u.PatientUserName == patient.UserName );
+
+            return patient;
 
         } // ReadAsync
 
@@ -37,6 +44,7 @@ namespace DMS.Services
         {
             return _db.Patients
                 .Include( d => d.Doctor )
+                .Include( o => o.PatientSignedHIPAANotice )
                 .Include( g => g.GlucoseEntries )
                 .Include( e => e.ExerciseEntries )
                 .Include( m => m.MealEntries )
@@ -50,7 +58,7 @@ namespace DMS.Services
             _db.Patients.Add( patient );
             await _db.SaveChangesAsync();
 
-            if( Config.AuditingOn )
+            if ( Config.AuditingOn )
             {
                 var auditChange = new AuditChange();
                 auditChange.CreateAuditTrail( AuditActionType.CREATE, patient.Id, new Patient(), patient );
@@ -66,12 +74,12 @@ namespace DMS.Services
         public async Task UpdateAsync( string username, Patient patient )
         {
             var dbPatient = await ReadAsync( username );
-            if( dbPatient != null )
+            if ( dbPatient != null )
             {
-                if( Config.AuditingOn )
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
-                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, dbPatient, patient ) )
+                    if ( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, dbPatient, patient ) )
                         await _auditRepo.CreateAsync( auditChange );
 
                 } // if
@@ -91,10 +99,11 @@ namespace DMS.Services
                 dbPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
                 dbPatient.Height = patient.Height;
                 dbPatient.Weight = patient.Weight;
+                dbPatient.PatientSignedHIPAANotice = patient.PatientSignedHIPAANotice;
 
                 _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
 
-                if( dbPatient?.Doctor?.UserName == patient?.Doctor?.UserName )
+                if ( dbPatient?.Doctor?.UserName == patient?.Doctor?.UserName )
                 {
                 }
                 else
@@ -104,7 +113,7 @@ namespace DMS.Services
                     //if( !string.IsNullOrEmpty( patient.DrUserName ) && dbPatient.DrUserName != patient.DrUserName )
                     //    dbPatient.DrUserName = patient.DrUserName;
                     //if( patient.Doctor != null )
-                        //dbPatient.Doctor = patient.Doctor;
+                    //dbPatient.Doctor = patient.Doctor;
                 }
 
                 _db.Entry( dbPatient ).State = EntityState.Modified;
@@ -118,9 +127,9 @@ namespace DMS.Services
         public async Task DeleteAsync( string username )
         {
             var patient = await ReadAsync( username );
-            if( patient != null )
+            if ( patient != null )
             {
-                if( Config.AuditingOn )
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
                     auditChange.CreateAuditTrail( AuditActionType.DELETE, patient.Id, patient, new Patient() );

@@ -22,6 +22,21 @@ namespace DMS.Services
         } // constructor
 
 
+        public async Task<HIPAAPrivacyNotice> ReadNewestAsync()
+        {
+            if ( _db.HIPAAPrivacyNotices.Any() )
+            {
+                var notices = _db.HIPAAPrivacyNotices
+                    .OrderBy(o => o.Version)
+                    .ToList();
+                return notices[ notices.Count - 1 ];
+            }
+            else
+                return new HIPAAPrivacyNotice();
+
+        } // ReadNewest
+
+
         public async Task<HIPAAPrivacyNotice> ReadAsync( Guid id )
         {
             return await ReadAll()
@@ -39,10 +54,12 @@ namespace DMS.Services
 
         public async Task<HIPAAPrivacyNotice> CreateAsync( HIPAAPrivacyNotice privacyNotice )
         {
+            privacyNotice.CreatedAt = DateTime.Now;
+            privacyNotice.UpdatedAt = DateTime.Now;
             await _db.HIPAAPrivacyNotices.AddAsync( privacyNotice );
             await _db.SaveChangesAsync();
 
-            if( Config.AuditingOn )
+            if ( Config.AuditingOn )
             {
                 var auditChange = new AuditChange();
                 auditChange.CreateAuditTrail( AuditActionType.CREATE, privacyNotice.Id.ToString(), new HIPAAPrivacyNotice(), privacyNotice );
@@ -58,20 +75,20 @@ namespace DMS.Services
         public async Task UpdateAsync( Guid id, HIPAAPrivacyNotice privacyNotice )
         {
             var dbNotice = await ReadAsync( id );
-            if( dbNotice != null )
+            if ( dbNotice != null )
             {
-                if( Config.AuditingOn )
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
                     auditChange.CreateAuditTrail( AuditActionType.UPDATE, privacyNotice.Id.ToString(), dbNotice, privacyNotice );
                     await _auditRepo.CreateAsync( auditChange );
-                    
+
                 } // if
 
                 dbNotice.CreatedAt = privacyNotice.CreatedAt;
                 dbNotice.NoticeText = privacyNotice.NoticeText;
                 dbNotice.Title = privacyNotice.Title;
-                dbNotice.UpdatedAt = privacyNotice.UpdatedAt;
+                dbNotice.UpdatedAt = DateTime.Now;
                 dbNotice.Version = privacyNotice.Version;
 
                 _db.Entry( dbNotice ).State = EntityState.Modified;
@@ -86,9 +103,9 @@ namespace DMS.Services
         public async Task DeleteAsync( Guid id )
         {
             var notice = await ReadAsync( id );
-            if( notice != null )
+            if ( notice != null )
             {
-                if( Config.AuditingOn )
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
                     auditChange.CreateAuditTrail( AuditActionType.DELETE, notice.Id.ToString(), notice, new HIPAAPrivacyNotice() );

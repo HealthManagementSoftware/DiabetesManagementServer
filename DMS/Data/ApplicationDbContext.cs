@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using DMS.Models;
 
+
 namespace DMS.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
@@ -19,7 +20,9 @@ namespace DMS.Data
         public DbSet<MealItem> MealItems { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
+        public DbSet<Developer> Developers { get; set; }
         public DbSet<HIPAAPrivacyNotice> HIPAAPrivacyNotices { get; set; }
+        public DbSet<PatientSignedHIPAANotice> PatientSignedHIPAANotices { get; set; }
         //public DbSet<ApplicationUserRole> ApplicationUserRoles { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -39,8 +42,8 @@ namespace DMS.Data
             // For example, you can rename the ASP.NET Identity table names and more.
             // Add your customizations after calling base.OnModelCreating(builder);
 
-            //builder.Entity<ApplicationUserRole>()
-            //    .HasKey( k => new { k.UserId, k.RoleId } );
+            //builder.Entity<PatientSignedHIPAANotice>()
+            //    .HasKey(k => new { k.PatientUserName, k.NoticeId });
 
             //builder.Entity<ApplicationUser>()
             //    .HasMany( o => o.Roles )
@@ -66,6 +69,15 @@ namespace DMS.Data
                 .HasMany( o => o.ExerciseEntries )
                 .WithOne( o => o.Patient )
                 .HasForeignKey( o => o.UserName );
+
+            builder.Entity<PatientSignedHIPAANotice>()
+                .HasOne(o => o.Patient)
+                .WithOne(o => o.PatientSignedHIPAANotice)
+                .HasForeignKey<PatientSignedHIPAANotice>(o => o.PatientUserName);
+
+            builder.Entity<HIPAAPrivacyNotice>()
+                .HasMany(o => o.Signatures)
+                .WithOne(o => o.HIPAAPrivacyNotice);
 
             builder.Entity<Doctor>()
                 .HasMany( o => o.Patients )

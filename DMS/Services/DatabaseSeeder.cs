@@ -10,7 +10,7 @@ namespace DMS.Services
 {
     public class DatabaseSeeder
     {
-        private ApplicationDbContext _context;
+        private ApplicationDbContext _db;
         public IAuditRepository _auditRepository { get; set; }
         private RoleManager<ApplicationRole> _roleManager;
 
@@ -19,7 +19,7 @@ namespace DMS.Services
            IAuditRepository auditRepository,
            RoleManager<ApplicationRole> roleManager )
         {
-            _context = context;
+            _db = context;
             _auditRepository = auditRepository;
             _roleManager = roleManager;
         }
@@ -27,11 +27,11 @@ namespace DMS.Services
 
         public void SeedRoles()
         {
-            _context.Database.EnsureCreated();
+            _db.Database.EnsureCreated();
             AuditChange change;
             ApplicationRole role;
 
-            if ( !_context.Roles.Any( r => r.Name == Roles.DOCTOR ) )
+            if ( !_db.Roles.Any( r => r.Name == Roles.DOCTOR ) )
             {
                 Debug.WriteLine( "Creating Doctor role..." );
                 role = new ApplicationRole
@@ -41,24 +41,48 @@ namespace DMS.Services
                     CreatedDate = DateTime.Now
                 };
                 _roleManager.CreateAsync( role );
-                change = new AuditChange();
-                change.CreateAuditTrail( AuditActionType.CREATE, role.Id, new ApplicationRole(), role );
-                _auditRepository.CreateAsync( change );
+                if (Config.AuditingOn)
+                {
+                    change = new AuditChange();
+                    change.CreateAuditTrail(AuditActionType.CREATE, role.Id, new ApplicationRole(), role);
+                    _auditRepository.CreateAsync(change);
+                }
             }
 
-            if ( !_context.Roles.Any( r => r.Name == Roles.PATIENT ) )
+            if ( !_db.Roles.Any( r => r.Name == Roles.PATIENT ) )
             {
                 Debug.WriteLine( "Creating Patient role..." );
                 role = new ApplicationRole
                 {
                     Name = Roles.PATIENT,
-                    Description = "A patient, registered to a doctor",
+                    Description = "A patient who is registered to a doctor.",
                     CreatedDate = DateTime.Now
                 };
                 _roleManager.CreateAsync( role );
-                change = new AuditChange();
-                change.CreateAuditTrail( AuditActionType.CREATE, role.Id, new ApplicationRole(), role );
-                _auditRepository.CreateAsync( change );
+                if (Config.AuditingOn)
+                {
+                    change = new AuditChange();
+                    change.CreateAuditTrail(AuditActionType.CREATE, role.Id, new ApplicationRole(), role);
+                    _auditRepository.CreateAsync(change);
+                }
+            }
+
+            if (!_db.Roles.Any(r => r.Name == Roles.DEVELOPER))
+            {
+                Debug.WriteLine("Creating Developer role...");
+                role = new ApplicationRole
+                {
+                    Name = Roles.DEVELOPER,
+                    Description = "A developer role allowing heightened permissions.",
+                    CreatedDate = DateTime.Now
+                };
+                _roleManager.CreateAsync(role);
+                if (Config.AuditingOn)
+                {
+                    change = new AuditChange();
+                    change.CreateAuditTrail(AuditActionType.CREATE, role.Id, new ApplicationRole(), role);
+                    _auditRepository.CreateAsync(change);
+                }
             }
 
         } // SeedRoles

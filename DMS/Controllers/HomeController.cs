@@ -19,18 +19,16 @@ namespace DMS.Controllers
 
         public IActionResult Index()
         {
-            if( User.Identity.IsAuthenticated )
+            if ( User.Identity.IsAuthenticated )
             {
                 //var user = _user.ReadUser(User.);
 
-                if( User.IsInRole( Roles.DOCTOR ) )
-                {
+                if ( User.IsInRole( Roles.DOCTOR ) )
                     return RedirectToAction( nameof( Index ), "Doctor" );
-                }
-                else if( User.IsInRole( Roles.PATIENT ) )
-                {
+                else if ( User.IsInRole( Roles.PATIENT ) )
                     return RedirectToAction( nameof( Index ), "Patient" );
-                }
+                else if ( User.IsInRole( Roles.DEVELOPER ) )
+                    return RedirectToAction( nameof( Index ), "HIPAAPrivacyNotices" );
             }
 
             ViewData[ "Message" ] = "Welcome to My Glucose!";

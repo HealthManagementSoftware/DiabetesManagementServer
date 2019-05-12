@@ -27,6 +27,8 @@ namespace DMS.Models.AccountViewModels
 
         public List<ApplicationRole> AllRoles { get; set; }
 
+        public bool DevCreationAllowed { get { return Config.AllowDevCreation; } }
+
         //public string SelectedUser { get; set; }
 
         [Required]
@@ -65,7 +67,7 @@ namespace DMS.Models.AccountViewModels
                 UserName = Email,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                SecurityStamp = new Guid().ToString()
+                SecurityStamp = Guid.NewGuid().ToString(),
                 //HasSignedHIPAANotice = false
             };
             var passHash = new PasswordHasher<ApplicationUser>();
@@ -87,7 +89,7 @@ namespace DMS.Models.AccountViewModels
                 DegreeAbbreviation = DegreeAbbreviation,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                SecurityStamp = new Guid().ToString()
+                SecurityStamp = Guid.NewGuid().ToString()
             };
             var passHash = new PasswordHasher<ApplicationUser>();
             var hash = passHash.HashPassword(doc, Password);
@@ -108,7 +110,7 @@ namespace DMS.Models.AccountViewModels
                 UserName = Email,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                SecurityStamp = new Guid().ToString()
+                SecurityStamp = Guid.NewGuid().ToString()
             };
             var passHash = new PasswordHasher<ApplicationUser>();
             var hash = passHash.HashPassword(dev, Password);

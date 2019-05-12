@@ -39,6 +39,10 @@
     font-weight: bold;
 }
 
+.inline-block {
+    display: inline-block !important;
+}
+
 input, select, option {
     color: #333;
 }
@@ -55,6 +59,13 @@ input, select, option {
 
 .logo {
     height: 30px;
+}
+
+.mright-1 {
+    margin-right: 1em;
+}
+.mright-2 {
+    margin-right: 2em;
 }
 
 .mtop-2 {

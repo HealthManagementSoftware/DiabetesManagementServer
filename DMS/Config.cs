@@ -7,7 +7,10 @@ namespace DMS
 {
     internal class Config
     {
-        public const bool AuditingOn = false;
+        internal const bool AuditingOn = false;
+        internal const bool AllowDevCreation = false;
+
+        internal const string HIPAANoticeVersion = "0.1";
 
     } // class
 

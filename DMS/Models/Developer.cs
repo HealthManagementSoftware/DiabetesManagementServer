@@ -7,7 +7,7 @@ namespace DMS.Models
 {
     public class Developer : ApplicationUser
     {
-
+        public string Title { get; set; }
 
     } // class
 

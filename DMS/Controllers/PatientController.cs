@@ -5,6 +5,7 @@ using DMS.Models.ViewModels;
 using DMS.Services.Interfaces;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace DMS.Controllers
 {
@@ -12,20 +13,81 @@ namespace DMS.Controllers
     public class PatientController : Controller
     {
         private IPatientRepository _pat;
+        private IPatientSignedHIPAANoticeRepository _patientSignedHIPAA;
         private IDoctorRepository _doc;
+        private IHIPAANoticeRepository _hipaa;
 
         public PatientController( IPatientRepository pat,
-                                 IDoctorRepository doc )
+                                 IDoctorRepository doc,
+                                 IHIPAANoticeRepository hipaa,
+                                 IPatientSignedHIPAANoticeRepository patientSignedHIPAA )
         {
             _pat = pat;
+            _patientSignedHIPAA = patientSignedHIPAA;
             _doc = doc;
-        }
+            _hipaa = hipaa;
+
+        } // Constructor
+
 
         public async Task<IActionResult> Index()
         {
-            //var doctors = _doc.ReadAll();
-            return View( await _pat.ReadAsync( User.Identity.Name ) );
-        }
+            var patient = await _pat.ReadAsync(User.Identity.Name);
+            if (patient.PatientSignedHIPAANotice != null && !patient.PatientSignedHIPAANotice.Signed)
+                return RedirectToAction( nameof(SignHIPAANotice) );
+            return View( patient );
+
+        } // Index
+
+
+        public async Task<IActionResult> SignHIPAANotice()
+        {
+            SignHIPAANoticeViewModel vm = new SignHIPAANoticeViewModel();
+            vm.HIPAAPrivacyNotice = await _hipaa.ReadNewestAsync();
+            vm.Patient = await _pat.ReadAsync(User.Identity.Name);
+            if (vm.Patient == null)
+                return RedirectToAction(nameof(Index));
+
+            return View( vm );
+
+        } // SignHIPAANotice
+
+
+        [HttpPost]
+        public async Task<IActionResult> SignHIPAANotice( SignHIPAANoticeViewModel vm )
+        {
+            if ( !ModelState.IsValid )
+                return NotFound();
+
+            // If patient hasn't agreed to privacy notice, we need to stay here:
+            if (!vm.IAgree || vm.HIPAAPrivacyNotice == null)
+                return View(vm);
+
+            var notice = await _hipaa.ReadNewestAsync();
+
+            // Create the record of the signed notice in the sytem:
+            var signedNotice = new PatientSignedHIPAANotice //vm.GetNewPatientSignedHIPAANotice();
+            {
+                NoticeId = notice.Id,
+                HIPAAPrivacyNotice = notice,
+                PatientUserName = User.Identity.Name,
+                Patient = await _pat.ReadAsync( User.Identity.Name ),
+                Signed = true,
+                SignedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+            signedNotice = await _patientSignedHIPAA.CreateAsync(signedNotice);
+
+            // Attach the signed notice to the patient signing it:
+            Patient patient = await _pat.ReadAsync(User.Identity.Name);
+            patient.PatientSignedHIPAANotice = signedNotice;
+            await _pat.UpdateAsync(patient.UserName, patient);
+
+            // Once signed, proceed to the main index:
+            return RedirectToAction(nameof(Index));
+
+        } // SignHIPAANotice
+
 
         public IActionResult PatientList()
         {

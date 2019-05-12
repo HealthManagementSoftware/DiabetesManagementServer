@@ -31,7 +31,7 @@ namespace DMS.Services
         public async Task<Doctor> ReadAsync( string username )
         {
             return await ReadAll()
-                .Include( p => p.Patients )
+                //.Include( p => p.Patients )
                 .SingleOrDefaultAsync( o => o.UserName == username );
 
         } // ReadAsync

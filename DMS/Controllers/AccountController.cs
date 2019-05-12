@@ -25,7 +25,7 @@ namespace DMS.Controllers
         private IApplicationUserRepository _users;
         private IDoctorRepository _doctorRepository;
         private IPatientRepository _patientRepository;
-
+        private IDeveloperRepository _developerRepository;
 
 
         public AccountController(
@@ -35,7 +35,8 @@ namespace DMS.Controllers
             ILogger<AccountController> logger,
             IApplicationUserRepository users,
             IDoctorRepository doctorRepository,
-            IPatientRepository patientRepository )
+            IPatientRepository patientRepository,
+            IDeveloperRepository developerRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -44,6 +45,7 @@ namespace DMS.Controllers
             _users = users;
             _doctorRepository = doctorRepository;
             _patientRepository = patientRepository;
+            _developerRepository = developerRepository;
         }
 
         [TempData]
@@ -250,7 +252,6 @@ namespace DMS.Controllers
                 {
                     case Roles.DOCTOR:
                         Doctor doctor = registerVM.GetNewDoctor();
-                        //result = await _userManager.CreateAsync(doctor, registerVM.Password);
                         doctor = await _doctorRepository.CreateAsync(doctor);
                         await _userManager.AddToRoleAsync(doctor, Roles.DOCTOR.ToUpper());
                         //await _users.AssignRole(doctor.UserName, Roles.DOCTOR.ToUpper());
@@ -259,16 +260,15 @@ namespace DMS.Controllers
 
                     case Roles.PATIENT:
                         Patient patient = await registerVM.GetNewPatient(_doctorRepository);
-                        //result = await _userManager.CreateAsync(patient, registerVM.Password);
                         patient = await _patientRepository.CreateAsync(patient);
                         await _userManager.AddToRoleAsync(patient, Roles.PATIENT);
                         await SetupUser(patient, registerVM);
                         break;
 
-                    // TODO: Create Dev repo, use here:
                     case Roles.DEVELOPER:
-                        Developer dev = new Developer();
-                        var result = await _userManager.CreateAsync(dev, registerVM.Password);
+                        Developer dev = registerVM.GetNewDeveloper();
+                        //var result = await _userManager.CreateAsync(dev, registerVM.Password);
+                        dev = await _developerRepository.CreateAsync(dev);
                         await _userManager.AddToRoleAsync(dev, Roles.DEVELOPER);
                         await SetupUser(dev, registerVM);
                         break;
