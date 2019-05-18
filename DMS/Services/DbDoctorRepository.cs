@@ -4,6 +4,7 @@ using DMS.Models;
 using DMS.Services.Interfaces;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace DMS.Services
 {
@@ -39,6 +40,7 @@ namespace DMS.Services
 
         public async Task<Doctor> CreateAsync( Doctor doctor )
         {
+            doctor.SecurityStamp = Guid.NewGuid().ToString();
             _db.Doctors.Add( doctor );
             await _db.SaveChangesAsync();
 
@@ -57,26 +59,20 @@ namespace DMS.Services
 
         public async Task UpdateAsync( string userName, Doctor doctor )
         {
-            var oldDoctor = await ReadAsync( userName );
-            if( oldDoctor != null )
+            var dbDoctor = await ReadAsync( userName );
+            if( dbDoctor != null )
             {
-                if( Config.AuditingOn )
-                {
-                    var auditChange = new AuditChange();
-                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, doctor.Id, oldDoctor, doctor ) )
-                        await _auditRepo.CreateAsync( auditChange );
 
-                } // if
-
-                oldDoctor.DegreeAbbreviation = doctor.DegreeAbbreviation;
+                dbDoctor.DegreeAbbreviation = doctor.DegreeAbbreviation;
 
                 if( doctor.Patients != null && doctor.Patients.Count > 0 )
-                    oldDoctor.Patients = doctor.Patients;
+                    dbDoctor.Patients = doctor.Patients;
 
-                _db.Entry( oldDoctor ).State = EntityState.Modified;
+                _db.Entry( dbDoctor ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
-                return;
             }
+
+            return;
 
         } // UpdateAsync
 

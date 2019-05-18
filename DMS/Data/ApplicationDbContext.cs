@@ -88,5 +88,7 @@ namespace DMS.Data
                 .WithOne( o => o.Meal );
 
         }
-    }
-}
+
+    } // class
+    
+} // namespace

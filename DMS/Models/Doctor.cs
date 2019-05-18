@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,6 +8,7 @@ namespace DMS.Models
 {
     public class Doctor : ApplicationUser
     {
+        [DisplayName( "Degree Abbreviation" )]
         public string DegreeAbbreviation { get; set; }
         public List<Patient> Patients { get; set; }
 

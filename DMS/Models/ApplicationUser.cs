@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,15 +19,21 @@ namespace DMS.Models
         public List<ApplicationRole> Roles { get; set; }
         //public IdentityUser User { get;  set; }
 
+        [DisplayName( "First Name" )]
         public string FirstName { get; set; }
+        [DisplayName( "Last Name" )]
         public string LastName { get; set; }
         public Guid RemoteLoginToken { get; set; }
         public long RemoteLoginExpiration { get; set; }
+        [DisplayName( "Address 1" )]
         public string Address1 { get; set; }
+        [DisplayName( "Address 2" )]
         public string Address2 { get; set; }
         public string City { get; set; }
         public string State { get; set; }
+        [DisplayName("Zip Code")]
         public int Zip1 { get; set; }
+        [DisplayName( "Zip 2" )]
         public int Zip2 { get; set; }
         public int Height { get; set; }
         public int Weight { get; set; }

@@ -57,7 +57,11 @@ namespace DMS.Services
     			oldPatientSignedHIPAANotice.Signed = hipaaNoticeVM.Signed;
     			oldPatientSignedHIPAANotice.SignedAt = hipaaNoticeVM.SignedAt;
     			oldPatientSignedHIPAANotice.UpdatedAt = hipaaNoticeVM.UpdatedAt;
+
+                _db.Entry( oldPatientSignedHIPAANotice.Patient ).State = EntityState.Unchanged;
+                _db.Entry( oldPatientSignedHIPAANotice.HIPAAPrivacyNotice ).State = EntityState.Unchanged;
                 _db.Entry( oldPatientSignedHIPAANotice ).State = EntityState.Modified;
+
                 await _db.SaveChangesAsync();
                 return;
             }

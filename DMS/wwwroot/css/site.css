@@ -82,6 +82,16 @@ input, select, option {
     border-radius: 8px;
 }
 
+.w-2 {
+    width: 100px !important;
+}
+.w-3 {
+    width: 3em !important;
+}
+.w-4 {
+    width: 4em !important;
+}
+
 #linechart_material {
     min-width: 100%;
     min-height: 200px;

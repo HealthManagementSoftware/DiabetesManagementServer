@@ -100,29 +100,29 @@ namespace DMS.Services
 
         public async Task UpdateAsync( string username, ApplicationUser applicationUser )
         {
-            var oldUser = await ReadAsync( username );
-            if ( oldUser != null )
+            var dbUser = await ReadAsync( username );
+            if ( dbUser != null )
             {
 
                 if (Config.AuditingOn)
                 {
                     var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail(AuditActionType.UPDATE, applicationUser.Id, oldUser, applicationUser);
+                    auditChange.CreateAuditTrail(AuditActionType.UPDATE, applicationUser.Id, dbUser, applicationUser);
                     await _auditRepo.CreateAsync(auditChange);
                 }
 
-                oldUser.UserName = applicationUser.UserName;
-                oldUser.Address1 = applicationUser.Address1;
-                oldUser.Address2 = applicationUser.Address2;
-                oldUser.City = applicationUser.City;
-                oldUser.Email = applicationUser.Email;
-                oldUser.LastName = applicationUser.LastName;
-                oldUser.PhoneNumber = applicationUser.PhoneNumber;
-                oldUser.State = applicationUser.State;
-                oldUser.Zip1 = applicationUser.Zip1;
-                oldUser.Zip2 = applicationUser.Zip2;
+                dbUser.Address1 = applicationUser.Address1;
+                dbUser.Address2 = applicationUser.Address2;
+                dbUser.City = applicationUser.City;
+                if ( !string.IsNullOrEmpty( applicationUser.Email ) )
+                    dbUser.Email = applicationUser.Email;
+                dbUser.LastName = applicationUser.LastName;
+                dbUser.PhoneNumber = applicationUser.PhoneNumber;
+                dbUser.State = applicationUser.State;
+                dbUser.Zip1 = applicationUser.Zip1;
+                dbUser.Zip2 = applicationUser.Zip2;
 
-                _db.Entry( oldUser ).State = EntityState.Modified;
+                _db.Entry( dbUser ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
 
                 return;
