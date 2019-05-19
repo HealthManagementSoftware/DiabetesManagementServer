@@ -9,10 +9,10 @@ namespace DMS.Models
     {
         public Guid Id { get; set; }
 
-        public string PatientUserName { get; set; }
+        public string PatientId { get; set; }
         public Patient Patient { get; set; }
 
-        public Guid NoticeId { get; set; }
+        public Guid HIPAAPrivacyNoticeId { get; set; }
         public HIPAAPrivacyNotice HIPAAPrivacyNotice { get; set; }
         public bool Signed { get; set; }
 

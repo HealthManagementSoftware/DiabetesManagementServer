@@ -11,9 +11,10 @@ namespace DMS.Services.Interfaces
     {
         Task<PatientSignedHIPAANotice> ReadAsync( string PatientUserName, Guid noticeid );
         IQueryable<PatientSignedHIPAANotice> ReadAll();
-        Task<PatientSignedHIPAANotice> CreateAsync( PatientSignedHIPAANotice project );
-        Task UpdateAsync( string patientUserName, Guid noticeid, SignHIPAANoticeViewModel project );
+        Task<PatientSignedHIPAANotice> CreateAsync( PatientSignedHIPAANotice patientSignedHIPAANotice );
+        Task UpdateAsync( string patientUserName, Guid noticeid, PatientSignedHIPAANotice patientSignedHIPAANotice );
         Task DeleteAsync(string patientUserName, Guid noticeid );
+        Task CreateOrUpdateEntry( PatientSignedHIPAANotice patientSignedHIPAANotice );
 
     } // Interface
 

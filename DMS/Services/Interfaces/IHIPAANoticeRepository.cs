@@ -8,7 +8,8 @@ namespace DMS.Services.Interfaces
 {
     public interface IHIPAANoticeRepository
     {
-        Task<HIPAAPrivacyNotice> ReadNewestAsync();
+        HIPAAPrivacyNotice ReadNewest();
+        string ReadNewestVersion();
         Task<HIPAAPrivacyNotice> ReadAsync( Guid id );
         IQueryable<HIPAAPrivacyNotice> ReadAll();
         Task<HIPAAPrivacyNotice> CreateAsync( HIPAAPrivacyNotice privacyNotice );

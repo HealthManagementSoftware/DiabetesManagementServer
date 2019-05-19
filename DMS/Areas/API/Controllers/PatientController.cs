@@ -14,18 +14,21 @@ namespace DMS.Areas.API.Controllers
         private IMealItemRepository _mealItemRepository;
         private IGlucoseEntryRepository _glucoseEntryRepository;
         private IExerciseEntryRepository _exerciseEntryRepository;
+        private IPatientSignedHIPAANoticeRepository _signedHIPAANoticeRepository;
 
         public PatientController( IPatientRepository patientRepository,
             IMealEntryRepository mealEntryRepository,
             IMealItemRepository mealItemRepository,
             IGlucoseEntryRepository glucoseEntriesRepository,
-            IExerciseEntryRepository exerciseEntryRepository )
+            IExerciseEntryRepository exerciseEntryRepository,
+            IPatientSignedHIPAANoticeRepository signedHIPAANoticeRepository )
         {
             _patientRepository = patientRepository;
             _mealEntryRepository = mealEntryRepository;
             _mealItemRepository = mealItemRepository;
             _glucoseEntryRepository = glucoseEntriesRepository;
             _exerciseEntryRepository = exerciseEntryRepository;
+            _signedHIPAANoticeRepository = signedHIPAANoticeRepository;
 
         } // injection constructor
 
@@ -68,6 +71,9 @@ namespace DMS.Areas.API.Controllers
 
             if ( patient.ExerciseEntries != null && patient.ExerciseEntries.Count > 0 )
                 await _exerciseEntryRepository.CreateOrUpdateEntries( patient.ExerciseEntries );
+
+            if ( patient.PatientSignedHIPAANotice != null )
+                await _signedHIPAANoticeRepository.CreateOrUpdateEntry( patient.PatientSignedHIPAANotice );
 
             // Nullify sensitive information:
             patient.PasswordHash = "";

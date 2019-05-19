@@ -43,7 +43,7 @@ namespace DMS.Controllers
         public async Task<IActionResult> SignHIPAANotice()
         {
             SignHIPAANoticeViewModel vm = new SignHIPAANoticeViewModel();
-            vm.HIPAAPrivacyNotice = await _hipaa.ReadNewestAsync();
+            vm.HIPAAPrivacyNotice = _hipaa.ReadNewest();
             vm.Patient = await _pat.ReadAsync(User.Identity.Name);
             if (vm.Patient == null)
                 return RedirectToAction(nameof(Index));
@@ -63,14 +63,14 @@ namespace DMS.Controllers
             if (!vm.IAgree || vm.HIPAAPrivacyNotice == null)
                 return View(vm);
 
-            var notice = await _hipaa.ReadNewestAsync();
+            var notice = _hipaa.ReadNewest();
 
             // Create the record of the signed notice in the sytem:
             var signedNotice = new PatientSignedHIPAANotice //vm.GetNewPatientSignedHIPAANotice();
             {
-                NoticeId = notice.Id,
+                HIPAAPrivacyNoticeId = notice.Id,
                 HIPAAPrivacyNotice = notice,
-                PatientUserName = User.Identity.Name,
+                PatientId = User.Identity.Name,
                 Patient = await _pat.ReadAsync( User.Identity.Name ),
                 Signed = true,
                 SignedAt = DateTime.Now,

@@ -9,7 +9,7 @@ namespace DMS.Models.ViewModels
 {
     public class SignHIPAANoticeViewModel
     {
-        public string PatientUserName { get; set; }
+        public string PatientId { get; set; }
         public Patient Patient { get; set; }
         public HIPAAPrivacyNotice HIPAAPrivacyNotice { get; set; }
         public bool Signed { get; set; }
@@ -22,9 +22,9 @@ namespace DMS.Models.ViewModels
 		{
 			return new PatientSignedHIPAANotice
 			{
-    			PatientUserName = PatientUserName,
+    			PatientId = PatientId,
     			Patient = Patient,
-                NoticeId = HIPAAPrivacyNotice.Id,
+                HIPAAPrivacyNoticeId = HIPAAPrivacyNotice.Id,
     			HIPAAPrivacyNotice = HIPAAPrivacyNotice,
     			Signed = IAgree,
     			SignedAt = DateTime.Now,

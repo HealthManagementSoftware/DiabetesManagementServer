@@ -24,7 +24,7 @@ namespace DMS.Services
         public async Task<PatientSignedHIPAANotice> ReadAsync( string PatientUserName, Guid noticeid )
         {
             return await ReadAll()
-                .SingleOrDefaultAsync( o => o.PatientUserName == PatientUserName && o.NoticeId == noticeid );
+                .SingleOrDefaultAsync( o => o.PatientId == PatientUserName && o.HIPAAPrivacyNoticeId == noticeid );
 
         } // ReadAsync
 
@@ -45,18 +45,18 @@ namespace DMS.Services
         } // Create
 
 
-        public async Task UpdateAsync( string patientUserName, Guid noticeid, SignHIPAANoticeViewModel hipaaNoticeVM )
+        public async Task UpdateAsync( string patientUserName, Guid noticeid, PatientSignedHIPAANotice hipaaNotice )
         {
             var oldPatientSignedHIPAANotice = await ReadAsync( patientUserName, noticeid );
-            if( oldPatientSignedHIPAANotice != null )
+            if ( oldPatientSignedHIPAANotice != null )
             {
-    			oldPatientSignedHIPAANotice.PatientUserName = hipaaNoticeVM.PatientUserName;
-    			oldPatientSignedHIPAANotice.Patient = hipaaNoticeVM.Patient;
-                oldPatientSignedHIPAANotice.NoticeId = hipaaNoticeVM.HIPAAPrivacyNotice.Id;
-    			oldPatientSignedHIPAANotice.HIPAAPrivacyNotice = hipaaNoticeVM.HIPAAPrivacyNotice;
-    			oldPatientSignedHIPAANotice.Signed = hipaaNoticeVM.Signed;
-    			oldPatientSignedHIPAANotice.SignedAt = hipaaNoticeVM.SignedAt;
-    			oldPatientSignedHIPAANotice.UpdatedAt = hipaaNoticeVM.UpdatedAt;
+                oldPatientSignedHIPAANotice.PatientId = hipaaNotice.PatientId;
+                oldPatientSignedHIPAANotice.Patient = hipaaNotice.Patient;
+                oldPatientSignedHIPAANotice.HIPAAPrivacyNoticeId = hipaaNotice.HIPAAPrivacyNotice.Id;
+                oldPatientSignedHIPAANotice.HIPAAPrivacyNotice = hipaaNotice.HIPAAPrivacyNotice;
+                oldPatientSignedHIPAANotice.Signed = hipaaNotice.Signed;
+                oldPatientSignedHIPAANotice.SignedAt = hipaaNotice.SignedAt;
+                oldPatientSignedHIPAANotice.UpdatedAt = hipaaNotice.UpdatedAt;
 
                 _db.Entry( oldPatientSignedHIPAANotice.Patient ).State = EntityState.Unchanged;
                 _db.Entry( oldPatientSignedHIPAANotice.HIPAAPrivacyNotice ).State = EntityState.Unchanged;
@@ -69,10 +69,10 @@ namespace DMS.Services
         } // UpdateAsync
 
 
-        public async Task DeleteAsync(string patientUserName, Guid noticeid )
+        public async Task DeleteAsync( string patientUserName, Guid noticeid )
         {
             var patientsignedhipaanotice = await ReadAsync(patientUserName, noticeid);
-            if( patientsignedhipaanotice != null )
+            if ( patientsignedhipaanotice != null )
             {
                 _db.PatientSignedHIPAANotices.Remove( patientsignedhipaanotice );
                 await _db.SaveChangesAsync();
@@ -80,6 +80,27 @@ namespace DMS.Services
             return;
 
         } // DeleteAsync
+
+
+        public async Task CreateOrUpdateEntry( PatientSignedHIPAANotice patientSignedHIPAANotice )
+        {
+            if ( patientSignedHIPAANotice == null )                  // If meal entry doesn't exist
+            {
+                // Create in the database
+                await CreateAsync( patientSignedHIPAANotice );
+
+            }
+            else if ( patientSignedHIPAANotice.UpdatedAt < patientSignedHIPAANotice.UpdatedAt )
+            {
+                // Update in the database
+                await UpdateAsync( patientSignedHIPAANotice.PatientId, 
+                    patientSignedHIPAANotice.HIPAAPrivacyNoticeId, patientSignedHIPAANotice );
+
+            }
+
+            return;
+
+        } // CreateOrUpdateEntries
 
     } // Class
 

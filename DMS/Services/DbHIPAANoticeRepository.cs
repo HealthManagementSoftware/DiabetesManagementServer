@@ -22,7 +22,7 @@ namespace DMS.Services
         } // constructor
 
 
-        public async Task<HIPAAPrivacyNotice> ReadNewestAsync()
+        public HIPAAPrivacyNotice ReadNewest()
         {
             if ( _db.HIPAAPrivacyNotices.Any() )
             {
@@ -118,6 +118,11 @@ namespace DMS.Services
             }
             return;
 
+        }
+
+        public string ReadNewestVersion()
+        {
+            return ReadNewest().Version;
         }
 
     } // class

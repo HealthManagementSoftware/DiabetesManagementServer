@@ -73,7 +73,7 @@ namespace DMS.Data
             builder.Entity<PatientSignedHIPAANotice>()
                 .HasOne(o => o.Patient)
                 .WithOne(o => o.PatientSignedHIPAANotice)
-                .HasForeignKey<PatientSignedHIPAANotice>(o => o.PatientUserName);
+                .HasForeignKey<PatientSignedHIPAANotice>(o => o.PatientId);
 
             builder.Entity<HIPAAPrivacyNotice>()
                 .HasMany(o => o.Signatures)
