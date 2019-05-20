@@ -13,6 +13,10 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="CompareNETObjects" Version="4.58.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />

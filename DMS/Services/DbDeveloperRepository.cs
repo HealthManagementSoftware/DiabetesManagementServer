@@ -12,17 +12,20 @@ namespace DMS.Services
     public class DbDeveloperRepository : IDeveloperRepository
     {
         private readonly ApplicationDbContext _db;
+        private IApplicationUserRepository _userRepo;
         private IAuditRepository _auditRepo;
 
         public DbDeveloperRepository( ApplicationDbContext db,
-            IAuditRepository auditRepository )
+            IAuditRepository auditRepository,
+            IApplicationUserRepository userRepo )
         {
             _db = db;
+            _userRepo = userRepo;
 
         } // constructor
 
 
-        public async Task<Developer> ReadAsync(string userName)
+        public async Task<Developer> ReadAsync( string userName )
         {
             return await _db.Developers
                 .SingleOrDefaultAsync( o => o.UserName == userName );
@@ -37,16 +40,16 @@ namespace DMS.Services
         } // ReadAll
 
 
-        public async Task<Developer> CreateAsync(Developer developer)
+        public async Task<Developer> CreateAsync( Developer developer )
         {
-            _db.Developers.Add(developer);
+            _db.Developers.Add( developer );
             await _db.SaveChangesAsync();
 
-            if (Config.AuditingOn)
+            if ( Config.AuditingOn )
             {
                 var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail(AuditActionType.CREATE, developer.Id, new Doctor(), developer);
-                await _auditRepo.CreateAsync(auditChange);
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, developer.Id, new Doctor(), developer );
+                await _auditRepo.CreateAsync( auditChange );
 
             } // if
 
@@ -55,43 +58,46 @@ namespace DMS.Services
         } // CreateAsync
 
 
-        public async Task UpdateAsync(string userName, Developer developer)
+        public async Task UpdateAsync( string userName, Developer developer )
         {
             var oldDeveloper = await ReadAsync(userName);
-            if (oldDeveloper != null)
+            if ( oldDeveloper != null )
             {
-                if (Config.AuditingOn)
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
-                    if (!auditChange.CreateAuditTrail(AuditActionType.UPDATE, developer.Id, oldDeveloper, developer))
-                        await _auditRepo.CreateAsync(auditChange);
+                    if ( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, developer.Id, oldDeveloper, developer ) )
+                        await _auditRepo.CreateAsync( auditChange );
 
                 } // if
 
-                oldDeveloper.Title = developer.Title;
+                if ( !string.IsNullOrEmpty( developer.Title ) )
+                    oldDeveloper.Title = developer.Title;
 
-                _db.Entry(oldDeveloper).State = EntityState.Modified;
+                _db.Entry( oldDeveloper ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
+
+                await _userRepo.UpdateAsync( userName, developer );
                 return;
             }
 
         } // UpdateAsync
 
 
-        public async Task DeleteAsync(string userName)
+        public async Task DeleteAsync( string userName )
         {
             var developer = await ReadAsync(userName);
-            if (developer != null)
+            if ( developer != null )
             {
-                if (Config.AuditingOn)
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail(AuditActionType.DELETE, developer.Id, developer, new Doctor());
-                    await _auditRepo.CreateAsync(auditChange);
+                    auditChange.CreateAuditTrail( AuditActionType.DELETE, developer.Id, developer, new Doctor() );
+                    await _auditRepo.CreateAsync( auditChange );
 
                 } // if
 
-                _db.Developers.Remove(developer);
+                _db.Developers.Remove( developer );
                 await _db.SaveChangesAsync();
             }
             return;

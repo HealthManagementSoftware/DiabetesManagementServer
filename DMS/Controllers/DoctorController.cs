@@ -96,6 +96,7 @@ namespace DMS.Controllers
         } // List
 
 
+        [Authorize( Roles = Roles.DEVELOPER )]
         // GET: HIPAAPrivacyNotices/Create
         public IActionResult Create()
         {
@@ -104,6 +105,7 @@ namespace DMS.Controllers
         } // Create
 
 
+        [Authorize( Roles = Roles.DEVELOPER )]
         // POST: HIPAAPrivacyNotices/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -169,7 +171,7 @@ namespace DMS.Controllers
 
 
         [Authorize( Roles = Roles.DEVELOPER )]
-        // GET: HIPAAPrivacyNotices/Delete/5
+        // GET: Doctor/Delete/5
         public async Task<IActionResult> Delete( string userName )
         {
             if ( userName == null )
@@ -189,7 +191,7 @@ namespace DMS.Controllers
         } // Delete
 
 
-        // POST: HIPAAPrivacyNotices/Delete/5
+        // POST: Doctor/Delete/5
         [Authorize( Roles = Roles.DEVELOPER )]
         [HttpPost, ActionName( "Delete" )]
         [ValidateAntiForgeryToken]
@@ -201,6 +203,7 @@ namespace DMS.Controllers
         } // DeleteConfirmed
 
 
+        [Authorize( Roles = Roles.DEVELOPER + "," + Roles.DOCTOR )]
         // GET: HIPAAPrivacyNotices/Details/5
         public async Task<IActionResult> Details( string userName )
         {

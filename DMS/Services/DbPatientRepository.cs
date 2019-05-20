@@ -2,6 +2,7 @@ using DMS.Data;
 using DMS.Models;
 using DMS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,13 +43,13 @@ namespace DMS.Services
 
         public IQueryable<Patient> ReadAll()
         {
-            return _db.Patients
-                .Include( d => d.Doctor )
-                .Include( o => o.PatientSignedHIPAANotice )
-                .Include( g => g.GlucoseEntries )
-                .Include( e => e.ExerciseEntries )
-                .Include( m => m.MealEntries )
-                    .ThenInclude( mi => mi.MealItems );
+            return _db.Patients;
+            //.Include( d => d.Doctor )
+            //.Include( o => o.PatientSignedHIPAANotice )
+            //.Include( g => g.GlucoseEntries )
+            //.Include( e => e.ExerciseEntries )
+            //.Include( m => m.MealEntries )
+            //    .ThenInclude( mi => mi.MealItems );
 
         } // ReadAll
 
@@ -56,6 +57,7 @@ namespace DMS.Services
         public async Task<Patient> CreateAsync( Patient patient )
         {
             _db.Patients.Add( patient );
+            _db.Entry( patient.PatientSignedHIPAANotice ).State = EntityState.Unchanged;
             await _db.SaveChangesAsync();
 
             if ( Config.AuditingOn )
@@ -92,16 +94,31 @@ namespace DMS.Services
                 dbPatient.State = patient.State;
                 dbPatient.Zip1 = patient.Zip1;
                 dbPatient.Zip2 = patient.Zip2;
-                dbPatient.PhoneNumber = patient.PhoneNumber;
-                dbPatient.Email = patient.Email;
-                dbPatient.CreatedAt = patient.CreatedAt;
-                dbPatient.UpdatedAt = patient.UpdatedAt;
-                dbPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
-                dbPatient.Height = patient.Height;
-                dbPatient.Weight = patient.Weight;
-                dbPatient.PatientSignedHIPAANotice = patient.PatientSignedHIPAANotice;
+                if ( !String.IsNullOrEmpty( patient.PhoneNumber ) )
+                    dbPatient.PhoneNumber = patient.PhoneNumber;
+                if ( !String.IsNullOrEmpty( patient.Email ) )
+                    dbPatient.Email = patient.Email;
+                if ( patient.CreatedAt != null )
+                    dbPatient.CreatedAt = patient.CreatedAt;
+                dbPatient.UpdatedAt = DateTime.Now;
+                if ( !String.IsNullOrEmpty( patient.RemoteLoginToken.ToString() ) )
+                    dbPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
+                if ( patient.Height > 0 )
+                    dbPatient.Height = patient.Height;
+                if ( patient.Weight > 0 )
+                    dbPatient.Weight = patient.Weight;
+                //dbPatient.PatientSignedHIPAANotice = patient.PatientSignedHIPAANotice;
+                //_db.Entry( patient.Doctor ).State = EntityState.Unchanged;
+                //_db.Attach( dbPatient.Doctor );
+                //_db.Entry( dbPatient.Doctor ).Property( "Id" ).CurrentValue = patient.Doctor.Id;
 
-                _db.Entry( patient.Doctor ).State = EntityState.Unchanged;
+                //_db.Entry( patient.Doctor ).State = EntityState.Unchanged;
+                if ( patient.Doctor != null )
+                {
+                    //dbPatient.DoctorUserName = patient.DoctorUserName;
+                    dbPatient.Doctor = patient.Doctor;
+                    _db.Entry( dbPatient.Doctor ).State = EntityState.Modified;
+                }
 
                 if ( dbPatient?.Doctor?.UserName == patient?.Doctor?.UserName )
                 {

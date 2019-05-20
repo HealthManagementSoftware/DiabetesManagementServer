@@ -1,21 +1,72 @@
 @using Microsoft.AspNetCore.Identity
 @using DMS.Models
+@using DMS.Services.Interfaces
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject IDoctorRepository _drRepo
 
-@if (SignInManager.IsSignedIn(User))
+@{
+    var dr = await _drRepo.ReadAsync(User.Identity.Name);
+    var name = "";
+    if ( dr != null )
+    {
+        name = dr.FirstName + " " + dr.LastName + ", " + dr.DegreeAbbreviation;
+    }
+    else if( UserManager.GetUserAsync( User ).Result != null )
+    {
+        name = UserManager.GetUserAsync( User ).Result.FirstName + " " + UserManager.GetUserAsync( User ).Result.LastName;
+    }
+}
+
+@if ( SignInManager.IsSignedIn( User ) )
 {
-    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
-        <ul class="nav navbar-nav navbar-right">
-            <li>
-                <a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
-            </li>
-            <li>
+    <ul class="nav navbar-nav navbar-right">
+        <li class="nav-dd">
+
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle navbar-btn" type="button" data-toggle="dropdown">
+                    @name
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li class="nav-dd">
+                        <a asp-area="" asp-controller="Home" asp-action="Index" title="Dashboard" class="nav-link">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-dd">
+                        <a asp-area="" asp-controller="Manage" asp-action="Index" title="My Account - Change your account details" class="nav-link">
+                            My Account
+                        </a>
+                    </li>
+                    @if ( User.IsInRole( Roles.DEVELOPER ) )
+                    {
+                        <li class="nav-dd">
+                            <a asp-area="" asp-controller="HIPAAPrivacyNotices" asp-action="Index" title="HIPAA Notices" class="nav-link">
+                                HIPAA Notices
+                            </a>
+                        </li>
+                        <li class="nav-dd">
+                            <a asp-area="" asp-controller="Doctor" asp-action="List" title="Doctor List" class="nav-link">
+                                Doctor List
+                            </a>
+                        </li>
+                        <li class="nav-dd">
+                            <a asp-area="" asp-controller="Patient" asp-action="PatientList" title="Patient List" class="nav-link">
+                                Patient List
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+        </li>
+        <li>
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
                 <button type="submit" class="btn btn-link navbar-btn navbar-link">Log out</button>
-            </li>
-        </ul>
-    </form>
+            </form>
+        </li>
+    </ul>
 }
 else
 {

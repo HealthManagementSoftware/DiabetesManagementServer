@@ -21,35 +21,27 @@ namespace DMS.Models.ManageViewModels
         [Display( Name = "Phone number" )]
         public string PhoneNumber { get; set; }
 
-        //Heather Harvey
         [Display( Name = "First Name" )]
         public string FirstName { get; set; }
 
-        //Heather Harvey
         [Display( Name = "Last Name" )]
         public string LastName { get; set; }
 
-        //Heather Harvey
         [Display( Name = "Address 1" )]
         public string Address1 { get; set; }
 
-        //Heather Harvey
         [Display( Name = "Address 2" )]
         public string Address2 { get; set; }
 
-        //Heather Harvey
         [Display( Name = "City" )]
         public string City { get; set; }
 
-        //Heather Harvey
         [Display( Name = "State" )]
         public string State { get; set; }
 
-        //Heather Harvey
         [Display( Name = "Zip Code 1" )]
         public int Zip1 { get; set; }
 
-        //Heather Harvey
         [Display( Name = "Zip Code 2" )]
         public int Zip2 { get; set; }
 
@@ -59,5 +51,6 @@ namespace DMS.Models.ManageViewModels
         [Display( Name = "Doctor" )]
         public string DoctorFullName { get; set; }
         public List<Doctor> AllDoctors { get; set; }
+        public string Title { get; internal set; }
     }
 }

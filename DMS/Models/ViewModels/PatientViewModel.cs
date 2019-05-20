@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DMS.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,10 +24,19 @@ namespace DMS.Models.ViewModels
         public int Zip2 { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
+        [Display(Name = "Doctor")]
+        public string DoctorUserName { get; set; }
+        public Doctor Doctor { get; set; }
 
-
-        public Patient GetNewPatient()
+        public PatientViewModel()
         {
+                
+        }
+
+
+        public async Task<Patient> GetNewPatient( IDoctorRepository doctorRepository )
+        {
+            var doc = await doctorRepository.ReadAsync( DoctorUserName );
             return new Patient
             {
                 UserName = UserName,
@@ -41,7 +52,8 @@ namespace DMS.Models.ViewModels
                 Email = Email,
                 GlucoseEntries = GlucoseEntries,
                 ExerciseEntries = ExerciseEntries,
-                MealEntries = MealEntries
+                MealEntries = MealEntries,
+                Doctor = doc
             };
 
         } // GetNewPatient

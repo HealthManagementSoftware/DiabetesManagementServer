@@ -28,6 +28,7 @@ namespace DMS.Controllers
         private IApplicationUserRepository _userRepository;
         private IDoctorRepository _doctorRepository;
         private IPatientRepository _patientRepository;
+        private IDeveloperRepository _devRepo;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
         private const string RecoveryCodesKey = nameof(RecoveryCodesKey);
@@ -40,7 +41,8 @@ namespace DMS.Controllers
           UrlEncoder urlEncoder,
           IApplicationUserRepository users,
           IDoctorRepository doctorRepo,
-          IPatientRepository patientRepo )
+          IPatientRepository patientRepo,
+          IDeveloperRepository devRepo )
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -50,6 +52,7 @@ namespace DMS.Controllers
             _userRepository = users;
             _doctorRepository = doctorRepo;
             _patientRepository = patientRepo;
+            _devRepo = devRepo;
         }
 
 
@@ -61,7 +64,7 @@ namespace DMS.Controllers
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
@@ -69,7 +72,7 @@ namespace DMS.Controllers
             Patient patient = null;
             Doctor doctor = null;
 
-            if (User.IsInRole( Roles.PATIENT ))
+            if ( User.IsInRole( Roles.PATIENT ) )
             {
                 patient = await _patientRepository.ReadAsync( User.Identity.Name );
                 doctor = _doctorRepository.ReadAll().Where( u => u.UserName == patient.Doctor.UserName ).FirstOrDefault();
@@ -123,16 +126,16 @@ namespace DMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index( IndexViewModel model )
         {
-            if( !ModelState.IsValid )
+            if ( !ModelState.IsValid )
                 return View( model );
 
             var user = await _userManager.GetUserAsync( User );
             await UpdateProfileItems( model, user );
 
-            if( User.IsInRole( Roles.DOCTOR ) )
+            if ( User.IsInRole( Roles.DOCTOR ) )
             {
                 var doctor = await _doctorRepository.ReadAsync( User.Identity.Name );
-                if( doctor == null )
+                if ( doctor == null )
                     throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
 
                 var currentDoctor = Doctor.Clone(doctor);
@@ -157,10 +160,10 @@ namespace DMS.Controllers
                 await _doctorRepository.UpdateAsync( User.Identity.Name, currentDoctor );
 
             }
-            else if( User.IsInRole( Roles.PATIENT ) )
+            else if ( User.IsInRole( Roles.PATIENT ) )
             {
                 var patient = await _patientRepository.ReadAsync( User.Identity.Name );
-                if( patient == null )
+                if ( patient == null )
                     throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
 
                 _logger.LogDebug( "****************PATIENT****************" );
@@ -180,7 +183,7 @@ namespace DMS.Controllers
                 //await UpdateProfileItems( model, currentPatient );
 
                 //patient.CopyFrom( user );
-                if( model.DoctorUserName != null )
+                if ( model.DoctorUserName != null )
                 {
                     currentPatient.Doctor = await _doctorRepository.ReadAsync( model.DoctorUserName );
                     //currentPatient.DrUserName = currentPatient.Doctor.UserName;
@@ -191,6 +194,23 @@ namespace DMS.Controllers
                 await _patientRepository.UpdateAsync( User.Identity.Name, currentPatient );
 
             } // if patient
+            else if ( User.IsInRole( Roles.DEVELOPER ) )
+            {
+                var dev = new Developer
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Address1 = model.Address1,
+                    Address2 = model.Address2,
+                    City = model.City,
+                    State = model.State,
+                    Zip1 = model.Zip1,
+                    Zip2 = model.Zip2,
+                    Title = model.Title
+                };
+                await _devRepo.UpdateAsync( User.Identity.Name, dev );
+
+            }
             else
             {
                 await _userRepository.UpdateAsync( user.UserName, user );
@@ -204,23 +224,23 @@ namespace DMS.Controllers
 
         private async Task UpdateProfileItems( IndexViewModel model, ApplicationUser user )
         {
-            if( user == null )
+            if ( user == null )
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
 
             var email = user.Email;
-            if( model.Email != email )
+            if ( model.Email != email )
             {
                 var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
-                if( !setEmailResult.Succeeded )
+                if ( !setEmailResult.Succeeded )
                     throw new ApplicationException( $"Unexpected error occurred setting email for user with ID '{user.Id}'." );
 
             } // if
 
             var phoneNumber = user.PhoneNumber;
-            if( model.PhoneNumber != phoneNumber )
+            if ( model.PhoneNumber != phoneNumber )
             {
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
-                if( !setPhoneResult.Succeeded )
+                if ( !setPhoneResult.Succeeded )
                     throw new ApplicationException( $"Unexpected error occurred setting phone number for user with ID '{user.Id}'." );
 
             } // if
@@ -232,11 +252,11 @@ namespace DMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendVerificationEmail( IndexViewModel model )
         {
-            if( !ModelState.IsValid )
+            if ( !ModelState.IsValid )
                 return View( model );
 
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -254,11 +274,11 @@ namespace DMS.Controllers
         public async Task<IActionResult> ChangePassword()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
 
             var hasPassword = await _userManager.HasPasswordAsync(user);
-            if( !hasPassword )
+            if ( !hasPassword )
                 return RedirectToAction( nameof( SetPassword ) );
 
             var model = new ChangePasswordViewModel { StatusMessage = StatusMessage };
@@ -271,19 +291,19 @@ namespace DMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword( ChangePasswordViewModel model )
         {
-            if( !ModelState.IsValid )
+            if ( !ModelState.IsValid )
             {
                 return View( model );
             }
 
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-            if( !changePasswordResult.Succeeded )
+            if ( !changePasswordResult.Succeeded )
             {
                 AddErrors( changePasswordResult );
                 return View( model );
@@ -300,14 +320,14 @@ namespace DMS.Controllers
         public async Task<IActionResult> SetPassword()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
             var hasPassword = await _userManager.HasPasswordAsync(user);
 
-            if( hasPassword )
+            if ( hasPassword )
             {
                 return RedirectToAction( nameof( ChangePassword ) );
             }
@@ -320,19 +340,19 @@ namespace DMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword( SetPasswordViewModel model )
         {
-            if( !ModelState.IsValid )
+            if ( !ModelState.IsValid )
             {
                 return View( model );
             }
 
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
             var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
-            if( !addPasswordResult.Succeeded )
+            if ( !addPasswordResult.Succeeded )
             {
                 AddErrors( addPasswordResult );
                 return View( model );
@@ -348,13 +368,13 @@ namespace DMS.Controllers
         public async Task<IActionResult> ExternalLogins()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
             var model = new ExternalLoginsViewModel { CurrentLogins = await _userManager.GetLoginsAsync(user) };
-            model.OtherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
+            model.OtherLogins = ( await _signInManager.GetExternalAuthenticationSchemesAsync() )
                 .Where( auth => model.CurrentLogins.All( ul => auth.Name != ul.LoginProvider ) )
                 .ToList();
             model.ShowRemoveButton = await _userManager.HasPasswordAsync( user ) || model.CurrentLogins.Count > 1;
@@ -380,19 +400,19 @@ namespace DMS.Controllers
         public async Task<IActionResult> LinkLoginCallback()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
             var info = await _signInManager.GetExternalLoginInfoAsync(user.Id);
-            if( info == null )
+            if ( info == null )
             {
                 throw new ApplicationException( $"Unexpected error occurred loading external login info for user with ID '{user.Id}'." );
             }
 
             var result = await _userManager.AddLoginAsync(user, info);
-            if( !result.Succeeded )
+            if ( !result.Succeeded )
             {
                 throw new ApplicationException( $"Unexpected error occurred adding external login for user with ID '{user.Id}'." );
             }
@@ -409,13 +429,13 @@ namespace DMS.Controllers
         public async Task<IActionResult> RemoveLogin( RemoveLoginViewModel model )
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
             var result = await _userManager.RemoveLoginAsync(user, model.LoginProvider, model.ProviderKey);
-            if( !result.Succeeded )
+            if ( !result.Succeeded )
             {
                 throw new ApplicationException( $"Unexpected error occurred removing external login for user with ID '{user.Id}'." );
             }
@@ -429,7 +449,7 @@ namespace DMS.Controllers
         public async Task<IActionResult> TwoFactorAuthentication()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
@@ -448,12 +468,12 @@ namespace DMS.Controllers
         public async Task<IActionResult> Disable2faWarning()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
-            if( !user.TwoFactorEnabled )
+            if ( !user.TwoFactorEnabled )
             {
                 throw new ApplicationException( $"Unexpected error occured disabling 2FA for user with ID '{user.Id}'." );
             }
@@ -466,13 +486,13 @@ namespace DMS.Controllers
         public async Task<IActionResult> Disable2fa()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
             var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
-            if( !disable2faResult.Succeeded )
+            if ( !disable2faResult.Succeeded )
             {
                 throw new ApplicationException( $"Unexpected error occured disabling 2FA for user with ID '{user.Id}'." );
             }
@@ -485,7 +505,7 @@ namespace DMS.Controllers
         public async Task<IActionResult> EnableAuthenticator()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
@@ -501,12 +521,12 @@ namespace DMS.Controllers
         public async Task<IActionResult> EnableAuthenticator( EnableAuthenticatorViewModel model )
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
-            if( !ModelState.IsValid )
+            if ( !ModelState.IsValid )
             {
                 await LoadSharedKeyAndQrCodeUriAsync( user, model );
                 return View( model );
@@ -518,7 +538,7 @@ namespace DMS.Controllers
             var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
                 user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
 
-            if( !is2faTokenValid )
+            if ( !is2faTokenValid )
             {
                 ModelState.AddModelError( "Code", "Verification code is invalid." );
                 await LoadSharedKeyAndQrCodeUriAsync( user, model );
@@ -537,7 +557,7 @@ namespace DMS.Controllers
         public IActionResult ShowRecoveryCodes()
         {
             var recoveryCodes = (string[])TempData[RecoveryCodesKey];
-            if( recoveryCodes == null )
+            if ( recoveryCodes == null )
             {
                 return RedirectToAction( nameof( TwoFactorAuthentication ) );
             }
@@ -557,7 +577,7 @@ namespace DMS.Controllers
         public async Task<IActionResult> ResetAuthenticator()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
@@ -573,12 +593,12 @@ namespace DMS.Controllers
         public async Task<IActionResult> GenerateRecoveryCodesWarning()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
-            if( !user.TwoFactorEnabled )
+            if ( !user.TwoFactorEnabled )
             {
                 throw new ApplicationException( $"Cannot generate recovery codes for user with ID '{user.Id}' because they do not have 2FA enabled." );
             }
@@ -591,12 +611,12 @@ namespace DMS.Controllers
         public async Task<IActionResult> GenerateRecoveryCodes()
         {
             var user = await _userManager.GetUserAsync(User);
-            if( user == null )
+            if ( user == null )
             {
                 throw new ApplicationException( $"Unable to load user with ID '{_userManager.GetUserId( User )}'." );
             }
 
-            if( !user.TwoFactorEnabled )
+            if ( !user.TwoFactorEnabled )
             {
                 throw new ApplicationException( $"Cannot generate recovery codes for user with ID '{user.Id}' as they do not have 2FA enabled." );
             }
@@ -613,7 +633,7 @@ namespace DMS.Controllers
 
         private void AddErrors( IdentityResult result )
         {
-            foreach( var error in result.Errors )
+            foreach ( var error in result.Errors )
             {
                 ModelState.AddModelError( string.Empty, error.Description );
             }
@@ -623,12 +643,12 @@ namespace DMS.Controllers
         {
             var result = new StringBuilder();
             int currentPosition = 0;
-            while( currentPosition + 4 < unformattedKey.Length )
+            while ( currentPosition + 4 < unformattedKey.Length )
             {
                 result.Append( unformattedKey.Substring( currentPosition, 4 ) ).Append( " " );
                 currentPosition += 4;
             }
-            if( currentPosition < unformattedKey.Length )
+            if ( currentPosition < unformattedKey.Length )
             {
                 result.Append( unformattedKey.Substring( currentPosition ) );
             }
@@ -648,7 +668,7 @@ namespace DMS.Controllers
         private async Task LoadSharedKeyAndQrCodeUriAsync( ApplicationUser user, EnableAuthenticatorViewModel model )
         {
             var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
-            if( string.IsNullOrEmpty( unformattedKey ) )
+            if ( string.IsNullOrEmpty( unformattedKey ) )
             {
                 await _userManager.ResetAuthenticatorKeyAsync( user );
                 unformattedKey = await _userManager.GetAuthenticatorKeyAsync( user );

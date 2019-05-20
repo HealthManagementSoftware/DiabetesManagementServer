@@ -28,7 +28,7 @@ namespace DMS.Controllers
                 else if ( User.IsInRole( Roles.PATIENT ) )
                     return RedirectToAction( nameof( Index ), "Patient" );
                 else if ( User.IsInRole( Roles.DEVELOPER ) )
-                    return RedirectToAction( nameof( Index ), "HIPAAPrivacyNotices" );
+                    return RedirectToAction( "List", "Doctor" );
             }
 
             ViewData[ "Message" ] = "Welcome to My Glucose!";

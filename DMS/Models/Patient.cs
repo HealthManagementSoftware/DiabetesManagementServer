@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DMS.Models
 {
@@ -10,10 +12,16 @@ namespace DMS.Models
         //      handling these values ourselves, EF will fail to eager-load the Doctor:
         //public string DrUserName { get; set; }
         //public string DoctorId { get; set; }
+
+        //public string DoctorUserName { get; set; }
+        [JsonIgnore] 
+        //[ForeignKey( nameof( DoctorUserName ) )]
         public Doctor Doctor { get; set; }
         public List<GlucoseEntry> GlucoseEntries { get; set; }
         public List<ExerciseEntry> ExerciseEntries { get; set; }
         public List<MealEntry> MealEntries { get; set; }
+        public string PatientSignedHIPAANoticeId { get; set; }
+        [ForeignKey( nameof(PatientSignedHIPAANoticeId) )]
         public PatientSignedHIPAANotice PatientSignedHIPAANotice { get; set; }
 
 

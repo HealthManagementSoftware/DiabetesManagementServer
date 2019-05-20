@@ -79,13 +79,17 @@
 </div>
 <div>
     @*<a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |*@
-    @if( User.IsInRole( Roles.DOCTOR ) )
+    @if ( User.IsInRole( Roles.DOCTOR ) )
     {
         <a asp-controller="Doctor" asp-action="Index">Back to Patient List</a>
     }
-    else if( User.IsInRole( Roles.PATIENT ) )
+    else if ( User.IsInRole( Roles.PATIENT ) )
     {
         <a asp-controller="Patient" asp-action="Index">Back to Dashboard</a>
+    }
+    else if ( User.IsInRole( Roles.DEVELOPER ) )
+    {
+        <a asp-controller="Patient" asp-action="PatientList">Back to Patient List</a>
     }
 </div>
  

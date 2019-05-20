@@ -87,11 +87,11 @@ namespace DMS.Services
             _db.Users.Add( applicationUser );
             await _db.SaveChangesAsync();
 
-            if (Config.AuditingOn)
+            if ( Config.AuditingOn )
             {
                 var auditChange = new AuditChange();
-                auditChange.CreateAuditTrail(AuditActionType.CREATE, applicationUser.Id, new ApplicationUser(), applicationUser);
-                await _auditRepo.CreateAsync(auditChange);
+                auditChange.CreateAuditTrail( AuditActionType.CREATE, applicationUser.Id, new ApplicationUser(), applicationUser );
+                await _auditRepo.CreateAsync( auditChange );
             }
             return applicationUser;
 
@@ -104,21 +104,29 @@ namespace DMS.Services
             if ( dbUser != null )
             {
 
-                if (Config.AuditingOn)
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail(AuditActionType.UPDATE, applicationUser.Id, dbUser, applicationUser);
-                    await _auditRepo.CreateAsync(auditChange);
+                    auditChange.CreateAuditTrail( AuditActionType.UPDATE, applicationUser.Id, dbUser, applicationUser );
+                    await _auditRepo.CreateAsync( auditChange );
                 }
 
-                dbUser.Address1 = applicationUser.Address1;
-                dbUser.Address2 = applicationUser.Address2;
-                dbUser.City = applicationUser.City;
+                if ( !string.IsNullOrEmpty( applicationUser.Address1 ) )
+                    dbUser.Address1 = applicationUser.Address1;
+                if ( !string.IsNullOrEmpty( applicationUser.Address2 ) )
+                    dbUser.Address2 = applicationUser.Address2;
+                if ( !string.IsNullOrEmpty( applicationUser.City ) )
+                    dbUser.City = applicationUser.City;
                 if ( !string.IsNullOrEmpty( applicationUser.Email ) )
                     dbUser.Email = applicationUser.Email;
-                dbUser.LastName = applicationUser.LastName;
-                dbUser.PhoneNumber = applicationUser.PhoneNumber;
-                dbUser.State = applicationUser.State;
+                if ( !string.IsNullOrEmpty( applicationUser.FirstName ) )
+                    dbUser.FirstName = applicationUser.FirstName;
+                if ( !string.IsNullOrEmpty( applicationUser.LastName ) )
+                    dbUser.LastName = applicationUser.LastName;
+                if ( !string.IsNullOrEmpty( applicationUser.PhoneNumber ) )
+                    dbUser.PhoneNumber = applicationUser.PhoneNumber;
+                if ( !string.IsNullOrEmpty( applicationUser.State ) )
+                    dbUser.State = applicationUser.State;
                 dbUser.Zip1 = applicationUser.Zip1;
                 dbUser.Zip2 = applicationUser.Zip2;
 
@@ -137,11 +145,11 @@ namespace DMS.Services
             var user = await ReadAsync( username );
             if ( user != null )
             {
-                if (Config.AuditingOn)
+                if ( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
-                    auditChange.CreateAuditTrail(AuditActionType.DELETE, user.Id, user, new ApplicationUser());
-                    await _auditRepo.CreateAsync(auditChange);
+                    auditChange.CreateAuditTrail( AuditActionType.DELETE, user.Id, user, new ApplicationUser() );
+                    await _auditRepo.CreateAsync( auditChange );
                 }
 
                 _db.Users.Remove( user );
