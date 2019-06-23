@@ -16,25 +16,23 @@ namespace DMS
 
         public static void Main( string[] args )
         {
-            //BuildWebHost(args).Run();                     // ASP.NET CORE 2.0
+            //BuildWebHost(args).Run();                         // ASP.NET CORE 2.0
 
             // Use the settings below to deploy to a custom environment (Linux deploy, etc).
             //var hostUrl = "http://0.0.0.0:51874";
 
             var host = WebHost
-                .CreateDefaultBuilder(args) // <-- Automatically adds User Secrets
+                .CreateDefaultBuilder(args)                     // <-- Automatically adds User Secrets
                 .ConfigureAppConfiguration((ctx, builder) =>    // CosmosDB
                 {
                     // This is set in the Azure Application Settings > Application Settings Section on the website
-                    var keyVaultEndpoint = Environment.GetEnvironmentVariable( "KEYVAULT_ENDPOINT" );
+                    var keyVaultEndpoint = GetKeyVaultEndpoint();// "https://diabeteskey.vault.azure.net";//
+
                     if (!string.IsNullOrEmpty(keyVaultEndpoint))
                     {
                         var azureServiceTokenProvider = new AzureServiceTokenProvider();
-                        var keyVaultClient = new KeyVaultClient(
-                            new KeyVaultClient.AuthenticationCallback(
-                                azureServiceTokenProvider.KeyVaultTokenCallback));
-                        builder.AddAzureKeyVault(
-                                keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager());
+                        var keyVaultClient = new KeyVaultClient( new KeyVaultClient.AuthenticationCallback( azureServiceTokenProvider.KeyVaultTokenCallback ) );
+                        builder.AddAzureKeyVault( keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager() );
                     }
                 })
                 .UseKestrel()

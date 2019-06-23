@@ -15,6 +15,7 @@ namespace DMS.Services.Interfaces
         Task UpdateAsync( string patientUserName, Guid noticeid, PatientSignedHIPAANotice patientSignedHIPAANotice );
         Task DeleteAsync(string patientUserName, Guid noticeid );
         Task CreateOrUpdateEntry( PatientSignedHIPAANotice patientSignedHIPAANotice );
+        bool Exists( string PatientUserName, Guid noticeid );
 
     } // Interface
 

@@ -86,8 +86,16 @@ namespace DMS.Areas.API.Controllers
                             patient.State,
                             patient.Zip1,
                             patient.Zip2,
-                            doctorUserName = patient?.Doctor?.UserName
-                            //patient.DoctorId
+                            doctorUserName = patient?.Doctor?.UserName,
+                            patientSignedHIPAANoticeId = patient.PatientSignedHIPAANoticeId,
+                            patientSignedHIPAANotice = 
+                            new
+                            {
+                                Id = patient.PatientSignedHIPAANoticeId,
+                                PatientId = patient.Id,
+                                patient.PatientSignedHIPAANotice.HIPAAPrivacyNoticeId
+                            },
+                            patient.DoctorId
                         }
                         );
                 Debug.WriteLine( res.ToString() );

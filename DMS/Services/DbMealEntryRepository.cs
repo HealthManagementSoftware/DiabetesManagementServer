@@ -125,17 +125,13 @@ namespace DMS.Services
             foreach( MealEntry mealEntry in mealEntries )
             {
                 MealEntry dbMealEntry = await ReadAsync( mealEntry.Id );
-                if( dbMealEntry == null )                  // If meal entry doesn't exist
+                if( !Exists( mealEntry.Id ) )                           // If meal entry doesn't exist
                 {
-                    // Create in the database
-                    await CreateAsync( mealEntry );
-
+                    await CreateAsync( mealEntry );                     // Create in the database 
                 }
                 else if( dbMealEntry.UpdatedAt < mealEntry.UpdatedAt )
                 {
-                    // Update in the database
-                    await UpdateAsync( mealEntry.Id, mealEntry );
-
+                    await UpdateAsync( mealEntry.Id, mealEntry );       // Update in the database
                 }
 
                 // Check whether meal items need to be created/updated:
@@ -146,6 +142,11 @@ namespace DMS.Services
             return;
 
         } // CreateOrUpdateEntries
+
+        public bool Exists( Guid id )
+        {
+            return _db.MealEntries.Any( o => o.Id == id );
+        }
 
     } // Class
 

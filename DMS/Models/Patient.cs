@@ -11,11 +11,11 @@ namespace DMS.Models
         //      implicitly, so should use either NONE or BOTH DrUserName and DoctorId. However, when 
         //      handling these values ourselves, EF will fail to eager-load the Doctor:
         //public string DrUserName { get; set; }
-        //public string DoctorId { get; set; }
+        public string DoctorId { get; set; }
 
         //public string DoctorUserName { get; set; }
-        [JsonIgnore] 
-        //[ForeignKey( nameof( DoctorUserName ) )]
+        [JsonIgnore]
+        [ForeignKey( nameof( DoctorId ) )]
         public Doctor Doctor { get; set; }
         public List<GlucoseEntry> GlucoseEntries { get; set; }
         public List<ExerciseEntry> ExerciseEntries { get; set; }
@@ -110,8 +110,8 @@ namespace DMS.Models
                 + "\nGlucoseEntries: " + glucoseString
                 + "\nExerciseEntries: " + exerciseString
                 + "\nMealEntries: " + mealEntryString
-                + "\nDoctorUserName: " + Doctor.UserName;
-                //+ "\nHasSignedHIPAANotice: " + HasSignedHIPAANotice;
+                + "\nDoctorUserName: " + Doctor.UserName
+                + "\nPatientSignedHIPAANotice: " + PatientSignedHIPAANotice;
 
         } // ToString
 

@@ -97,12 +97,12 @@ namespace DMS.Services
                     var auditChange = new AuditChange();
                     auditChange.CreateAuditTrail( AuditActionType.UPDATE, id.ToString(), glucoseEntry, new GlucoseEntry() );
                     await _auditRepo.CreateAsync( auditChange );
-
-                } // if
+                }
 
                 _db.GlucoseEntries.Remove( glucoseEntry );
                 await _db.SaveChangesAsync();
             }
+
             return;
 
         } // DeleteAsync
@@ -110,27 +110,29 @@ namespace DMS.Services
 
         public async Task CreateOrUpdateEntries( ICollection<GlucoseEntry> glucoseEntries )
         {
-            foreach ( GlucoseEntry glucoseEntry in glucoseEntries )
+            foreach( GlucoseEntry glucoseEntry in glucoseEntries )
             {
                 GlucoseEntry dbGlucoseEntry = await ReadAsync( glucoseEntry.Id );
-                if ( dbGlucoseEntry == null )                  // If meal entry doesn't exist
+                if( !Exists( glucoseEntry.Id ) )                       // If GlucoseEntry doesn't exist
                 {
-                    // Create in the database
-                    await CreateAsync( glucoseEntry );
-
+                    await CreateAsync( glucoseEntry );                  // Create in the database
                 }
-                else if ( dbGlucoseEntry.UpdatedAt < glucoseEntry.UpdatedAt )
+                else if( dbGlucoseEntry.UpdatedAt < glucoseEntry.UpdatedAt )
                 {
-                    // Update in the database
-                    await UpdateAsync( glucoseEntry.Id, glucoseEntry );
-
+                    await UpdateAsync( glucoseEntry.Id, glucoseEntry ); // Update in the database
                 }
-
-            } // foreach MealEntry
+            }
 
             return;
 
         } // CreateOrUpdateEntries
+
+
+        public bool Exists( Guid id )
+        {
+            return _db.GlucoseEntries.Any( o => o.Id == id );
+        }
+
 
     } // Class
 

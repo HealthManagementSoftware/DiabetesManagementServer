@@ -70,18 +70,32 @@ namespace DMS.Data
                 .WithOne( o => o.Patient )
                 .HasForeignKey( o => o.UserName );
 
+            builder.Entity<Patient>()
+                .HasOne( o => o.Doctor )
+                .WithMany( o => o.Patients );
+
+            builder.Entity<Patient>()
+                .HasOne( o => o.PatientSignedHIPAANotice )
+                .WithOne( o => o.Patient )
+                .HasForeignKey<Patient>( o => o.PatientSignedHIPAANoticeId );
+
+            builder.Entity<Doctor>()
+                .HasMany( o => o.Patients )
+                .WithOne( o => o.Doctor );
+
             builder.Entity<PatientSignedHIPAANotice>()
                 .HasOne(o => o.Patient)
                 .WithOne(o => o.PatientSignedHIPAANotice)
                 .HasForeignKey<PatientSignedHIPAANotice>(o => o.PatientId);
 
+            builder.Entity<PatientSignedHIPAANotice>()
+                .HasOne( o => o.HIPAAPrivacyNotice )
+                .WithMany( o => o.Signatures )
+                .HasForeignKey( o => o.HIPAAPrivacyNoticeId );
+
             builder.Entity<HIPAAPrivacyNotice>()
                 .HasMany(o => o.Signatures)
                 .WithOne(o => o.HIPAAPrivacyNotice);
-
-            builder.Entity<Doctor>()
-                .HasMany( o => o.Patients )
-                .WithOne( o => o.Doctor );
 
             builder.Entity<MealEntry>()
                 .HasMany( o => o.MealItems )

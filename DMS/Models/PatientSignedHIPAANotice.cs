@@ -25,6 +25,16 @@ namespace DMS.Models
 
         } // constructor
 
+        public override string ToString()
+        {
+            return "Id: " + Id
+                + "\nPatientId: " + PatientId
+                + "\nHIPAAPrivacyNoticeId: " + HIPAAPrivacyNoticeId
+                + "\nSigned: " + Signed
+                + "\nSignedAt: " + SignedAt
+                + "\nUpdatedAt: " + UpdatedAt;
+        }
+
     } // class
 
 } // namespace
