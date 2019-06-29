@@ -19,6 +19,7 @@ namespace DMS.Services.Interfaces
         Task DeleteAsync( Guid id );
         ExerciseEntry Create(ExerciseEntry exerciseEntry );
         Task CreateOrUpdateEntries( ICollection<ExerciseEntry> exerciseEntries );
+        bool Exists( Guid id );
 
     } // Interface
 

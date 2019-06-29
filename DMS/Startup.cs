@@ -124,7 +124,7 @@ namespace DMS
             services.AddScoped<IPatientRepository, DbPatientRepository>();
             services.AddScoped<IDoctorRepository, DbDoctorRepository>();
             services.AddScoped<IDeveloperRepository, DbDeveloperRepository>();
-            if ( Config.AuditingOn )
+            if( Config.AuditingOn )
                 services.AddScoped<IAuditRepository, DbAuditRepository>();
             else
                 services.AddScoped<IAuditRepository, DummyAuditRepository>();
@@ -267,9 +267,9 @@ namespace DMS
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
                 .Where(n => n.UserName == developer.UserName);
 
-            if (devQuery.ToList().Count < 1)
+            if( devQuery.ToList().Count < 1 )
                 await client.CreateDocumentAsync(
-                        UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), developer
+                        UriFactory.CreateDocumentCollectionUri( databaseName, collectionName ), developer
                     );
 
         } // CreateUserIfNotExists

@@ -14,7 +14,8 @@ namespace DMS.Services.Interfaces
         Task<Doctor> CreateAsync( Doctor doctor );
         Task UpdateAsync( string username, Doctor doctor );
         Task DeleteAsync( string username );
-        
+        bool Exists( string id );
+
 
     } // Interface
 

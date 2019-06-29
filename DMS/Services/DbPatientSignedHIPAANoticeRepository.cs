@@ -23,7 +23,7 @@ namespace DMS.Services
 
         public async Task<PatientSignedHIPAANotice> ReadAsync( string PatientUserName, Guid noticeid )
         {
-            return await ReadAll()
+            return await _db.PatientSignedHIPAANotices
                 .SingleOrDefaultAsync( o => o.PatientId == PatientUserName && o.HIPAAPrivacyNoticeId == noticeid );
 
         } // ReadAsync
@@ -47,12 +47,12 @@ namespace DMS.Services
 
         public async Task UpdateAsync( string patientUserName, Guid noticeid, PatientSignedHIPAANotice hipaaNotice )
         {
-            var oldPatientSignedHIPAANotice = await ReadAsync( patientUserName, noticeid );
-            if ( oldPatientSignedHIPAANotice != null )
+            if( Exists( patientUserName, noticeid ) )
             {
+                var oldPatientSignedHIPAANotice = await ReadAsync( patientUserName, noticeid );
                 oldPatientSignedHIPAANotice.PatientId = hipaaNotice.PatientId;
                 oldPatientSignedHIPAANotice.Patient = hipaaNotice.Patient;
-                oldPatientSignedHIPAANotice.HIPAAPrivacyNoticeId = hipaaNotice.HIPAAPrivacyNotice.Id;
+                oldPatientSignedHIPAANotice.HIPAAPrivacyNoticeId = hipaaNotice.HIPAAPrivacyNoticeId;
                 oldPatientSignedHIPAANotice.HIPAAPrivacyNotice = hipaaNotice.HIPAAPrivacyNotice;
                 oldPatientSignedHIPAANotice.Signed = hipaaNotice.Signed;
                 oldPatientSignedHIPAANotice.SignedAt = hipaaNotice.SignedAt;
@@ -63,17 +63,18 @@ namespace DMS.Services
                 _db.Entry( oldPatientSignedHIPAANotice ).State = EntityState.Modified;
 
                 await _db.SaveChangesAsync();
-                return;
             }
+
+            return;
 
         } // UpdateAsync
 
 
         public async Task DeleteAsync( string patientUserName, Guid noticeid )
         {
-            var patientsignedhipaanotice = await ReadAsync(patientUserName, noticeid);
-            if ( patientsignedhipaanotice != null )
+            if( Exists( patientUserName, noticeid ) )
             {
+                var patientsignedhipaanotice = await ReadAsync(patientUserName, noticeid);
                 _db.PatientSignedHIPAANotices.Remove( patientsignedhipaanotice );
                 await _db.SaveChangesAsync();
             }
@@ -84,23 +85,33 @@ namespace DMS.Services
 
         public async Task CreateOrUpdateEntry( PatientSignedHIPAANotice patientSignedHIPAANotice )
         {
-            if ( patientSignedHIPAANotice == null )                  // If meal entry doesn't exist
+            if( patientSignedHIPAANotice != null && !String.IsNullOrEmpty( patientSignedHIPAANotice.PatientId )
+                && !String.IsNullOrEmpty( patientSignedHIPAANotice.HIPAAPrivacyNoticeId.ToString() ) )
             {
-                // Create in the database
-                await CreateAsync( patientSignedHIPAANotice );
-
-            }
-            else if ( patientSignedHIPAANotice.UpdatedAt < patientSignedHIPAANotice.UpdatedAt )
-            {
-                // Update in the database
-                await UpdateAsync( patientSignedHIPAANotice.PatientId, 
-                    patientSignedHIPAANotice.HIPAAPrivacyNoticeId, patientSignedHIPAANotice );
-
+                var dbSHN = await ReadAsync( patientSignedHIPAANotice.PatientId, patientSignedHIPAANotice.HIPAAPrivacyNoticeId );
+                if( dbSHN != null )
+                {
+                    // Create in the database
+                    await CreateAsync( patientSignedHIPAANotice );
+                }
+                else if( dbSHN.UpdatedAt < patientSignedHIPAANotice.UpdatedAt )
+                {
+                    // Update in the database
+                    await UpdateAsync( patientSignedHIPAANotice.PatientId,
+                        patientSignedHIPAANotice.HIPAAPrivacyNoticeId, patientSignedHIPAANotice );
+                }
             }
 
             return;
 
         } // CreateOrUpdateEntries
+
+        public bool Exists( string PatientUserName, Guid noticeid )
+        {
+            var Patient = _db.Patients.FirstOrDefault( p => p.UserName == PatientUserName );
+            return Patient != null && _db.PatientSignedHIPAANotices.Any(
+                o => o.PatientId == Patient.Id && o.HIPAAPrivacyNoticeId == noticeid );
+        }
 
     } // Class
 

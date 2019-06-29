@@ -60,7 +60,7 @@ namespace DMS.Services
             _db.Entry( patient.PatientSignedHIPAANotice ).State = EntityState.Unchanged;
             await _db.SaveChangesAsync();
 
-            if ( Config.AuditingOn )
+            if( Config.AuditingOn )
             {
                 var auditChange = new AuditChange();
                 auditChange.CreateAuditTrail( AuditActionType.CREATE, patient.Id, new Patient(), patient );
@@ -75,13 +75,13 @@ namespace DMS.Services
 
         public async Task UpdateAsync( string username, Patient patient )
         {
-            var dbPatient = await ReadAsync( username );
-            if ( dbPatient != null )
+            if( Exists( username ) )
             {
-                if ( Config.AuditingOn )
+                var dbPatient = await ReadAsync( username );
+                if( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
-                    if ( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, dbPatient, patient ) )
+                    if( !auditChange.CreateAuditTrail( AuditActionType.UPDATE, patient.Id, dbPatient, patient ) )
                         await _auditRepo.CreateAsync( auditChange );
 
                 } // if
@@ -94,59 +94,60 @@ namespace DMS.Services
                 dbPatient.State = patient.State;
                 dbPatient.Zip1 = patient.Zip1;
                 dbPatient.Zip2 = patient.Zip2;
-                if ( !String.IsNullOrEmpty( patient.PhoneNumber ) )
+                if( !String.IsNullOrEmpty( patient.PhoneNumber ) )
                     dbPatient.PhoneNumber = patient.PhoneNumber;
-                if ( !String.IsNullOrEmpty( patient.Email ) )
+                if( !String.IsNullOrEmpty( patient.Email ) )
                     dbPatient.Email = patient.Email;
-                if ( patient.CreatedAt != null )
+                if( patient.CreatedAt != null )
                     dbPatient.CreatedAt = patient.CreatedAt;
                 dbPatient.UpdatedAt = DateTime.Now;
-                if ( !String.IsNullOrEmpty( patient.RemoteLoginToken.ToString() ) )
+                if( !String.IsNullOrEmpty( patient.RemoteLoginToken.ToString() ) )
                     dbPatient.RemoteLoginToken = patient.RemoteLoginToken; // In case it has changed
-                if ( patient.Height > 0 )
+                if( patient.Height > 0 )
                     dbPatient.Height = patient.Height;
-                if ( patient.Weight > 0 )
+                if( patient.Weight > 0 )
                     dbPatient.Weight = patient.Weight;
-                //dbPatient.PatientSignedHIPAANotice = patient.PatientSignedHIPAANotice;
-                //_db.Entry( patient.Doctor ).State = EntityState.Unchanged;
+                if( patient.PatientSignedHIPAANotice != null )
+                    dbPatient.PatientSignedHIPAANotice = patient.PatientSignedHIPAANotice;
+
+                _db.Entry( dbPatient.Doctor ).State = EntityState.Detached;
                 //_db.Attach( dbPatient.Doctor );
                 //_db.Entry( dbPatient.Doctor ).Property( "Id" ).CurrentValue = patient.Doctor.Id;
 
-                //_db.Entry( patient.Doctor ).State = EntityState.Unchanged;
-                if ( patient.Doctor != null )
-                {
-                    //dbPatient.DoctorUserName = patient.DoctorUserName;
-                    dbPatient.Doctor = patient.Doctor;
-                    _db.Entry( dbPatient.Doctor ).State = EntityState.Modified;
-                }
+                //if ( patient.Doctor != null )
+                //{
+                //    //dbPatient.DoctorUserName = patient.DoctorUserName;
+                //    dbPatient.Doctor = patient.Doctor;
+                //    _db.Entry( dbPatient.Doctor ).State = EntityState.Unchanged;
+                //}
 
-                if ( dbPatient?.Doctor?.UserName == patient?.Doctor?.UserName )
-                {
-                }
-                else
-                {
-                    //if( !string.IsNullOrEmpty( patient.DoctorId ) && oldPatient.DoctorId != patient.DoctorId )
-                    //    oldPatient.DoctorId = patient.DoctorId;
-                    //if( !string.IsNullOrEmpty( patient.DrUserName ) && dbPatient.DrUserName != patient.DrUserName )
-                    //    dbPatient.DrUserName = patient.DrUserName;
-                    //if( patient.Doctor != null )
-                    //dbPatient.Doctor = patient.Doctor;
-                }
+                //if ( dbPatient?.Doctor?.UserName == patient?.Doctor?.UserName )
+                //{
+                //}
+                //else
+                //{
+                //    //if( !string.IsNullOrEmpty( patient.DoctorId ) && oldPatient.DoctorId != patient.DoctorId )
+                //    //    oldPatient.DoctorId = patient.DoctorId;
+                //    //if( !string.IsNullOrEmpty( patient.DrUserName ) && dbPatient.DrUserName != patient.DrUserName )
+                //    //    dbPatient.DrUserName = patient.DrUserName;
+                //    //if( patient.Doctor != null )
+                //    //dbPatient.Doctor = patient.Doctor;
+                //}
 
                 _db.Entry( dbPatient ).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
-                return;
             }
+            return;
 
         } // UpdateAsync
 
 
         public async Task DeleteAsync( string username )
         {
-            var patient = await ReadAsync( username );
-            if ( patient != null )
+            if( Exists( username ) )
             {
-                if ( Config.AuditingOn )
+                var patient = await ReadAsync( username );
+                if( Config.AuditingOn )
                 {
                     var auditChange = new AuditChange();
                     auditChange.CreateAuditTrail( AuditActionType.DELETE, patient.Id, patient, new Patient() );
@@ -164,7 +165,7 @@ namespace DMS.Services
 
         public ApplicationUser ReadPatient( string email )
         {
-            return _db.Users.FirstOrDefault( u => u.Email == email );
+            return _db.Users.SingleOrDefault( u => u.Email == email );
         }
 
 

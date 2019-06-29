@@ -15,6 +15,7 @@ namespace DMS.Services.Interfaces
         Task UpdateAsync( Guid id, GlucoseEntry glucoseEntry );
         Task DeleteAsync( Guid id );
         Task CreateOrUpdateEntries( ICollection<GlucoseEntry> glucoseEntries );
+        bool Exists( Guid id );
 
     } // Interface
 

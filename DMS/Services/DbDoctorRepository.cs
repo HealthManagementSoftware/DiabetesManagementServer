@@ -102,9 +102,9 @@ namespace DMS.Services
             return _db.Users.FirstOrDefault( u => u.Email == email );
         }
 
-        public bool Exists( string firstName )
+        public bool Exists( string id )
         {
-            return _db.Doctors.Any( fn => fn.FirstName == firstName );
+            return _db.Doctors.Any( o => o.Id == id );
         }
 
     } // Class

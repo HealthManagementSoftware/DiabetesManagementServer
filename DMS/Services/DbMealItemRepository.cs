@@ -141,6 +141,11 @@ namespace DMS.Services
 
         } // CreateOrUpdateEntries
 
+        public bool Exists( Guid id )
+        {
+            return _db.MealItems.Any( o => o.Id == id );
+        }
+
     } // Class
 
 } // Namespace
